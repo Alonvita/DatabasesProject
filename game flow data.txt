@@ -1,0 +1,78 @@
+---- STEP 1 -> BEFORE GENERATING GAME ----
+View sends
+
+game.start()
+
+dict: {
+	"username": "user name here",
+	"game_type": game_time (INT)
+}
+
+
+game types:
+1. easy
+2. hard
+3. challenging
+
+
+after this function, logic needs to generate the GameInfoDict and give it back to the view.
+
+---- SEND TO VIEW ----
+
+1. easy game: only 1 {FORMAT}
+2. hard game: same
+3. challenging game: list of 5 {FORNAT}
+
+
+{FORMAT}:
+GameInfoDict: {
+	"artist_name": "artist name goes here",
+	"properties": ["title:info", "title2:info2" ...]	
+	"questions": {
+		"q1": {
+			"text": "text goes here",
+			"answers": ["right_answer", "a1", "a2", ...],
+			"true": "right_answer"
+		}
+		
+		"q2": {
+			"text": "text goes here",
+			"answers": ["right_answer", "a1", "a2", ...],
+			"true": "right_answer"
+		}
+		
+		"q3": {
+			"text": "text goes here",
+			"answers": ["right_answer", "a1", "a2", ...],
+			"true": "right_answer"
+		}
+	}
+}
+
+---- GET BACK FROM VIEW ----
+
+then after the game ends, View will call the function
+
+final_score = game.end(users_answers_list, gameInfoDict, gameType)
+
+FORMATS:
+	user_answers_list = [
+		q1_asnwer, 
+		q2_asnwer, 
+		...] <- for easy and hard games
+	user_answers_list = [
+		[q1_asnwer, q2_asnwer, ...],
+		[q1_asnwer, q2_asnwer, ...],
+		... ] <- for challenging game
+
+In this functions the logic need to calculate the final_score, send it back to the View AND update the database
+
+
+---- LEADER BOARDS ----
+list of rows:
+[
+    [headers],
+    [row 1],
+    [row 2],
+    ...
+]

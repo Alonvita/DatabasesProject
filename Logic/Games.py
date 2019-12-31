@@ -37,8 +37,9 @@ class Game:
 """
 {  
     Question: {
-        True: "ANSWER"
-        False: ["ANSWER2", "ANSWER3", "ANSWER4"] 
+        question: "Q GOES HERE"
+        True: "right_answer"
+        "answers": ["right_answer", "ANSWER2", "ANSWER3", "ANSWER4"] <- randomize 
     }
 }
 """
