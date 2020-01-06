@@ -1,7 +1,6 @@
 import mysql.connector
 from sqlite3 import OperationalError
 
-
 mydb = mysql.connector.connect(
     host="localhost",
     user="root",
@@ -13,7 +12,7 @@ mycursor = mydb.cursor()
 
 def execute_scripts_from_file(filename):
     # Open and read the file as a single buffer
-    fd = open(filename, 'r')
+    fd = open(filename, 'r', encoding="utf-8")
     sql_file = fd.read()
     fd.close()
 
