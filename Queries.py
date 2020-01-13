@@ -176,13 +176,6 @@ def get_top_players(game_type):  # todo: parse info
     return top
 
 
-def main():
-    execute_scripts_from_file("build_tables.sql")
-   # get_artist("Adele")
-    res = try_command()
-    print(res)
-
-
 if __name__ == '__main__':
     run()
     execute_scripts_from_file("build_tables.sql")
