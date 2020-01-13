@@ -2,6 +2,9 @@ import datetime
 
 
 class LogicGenerator:
+    EASY_GAME_NUMBER_OF_QUESTIONS = 5
+    EASY_GAME_NUMBER_OF_QUESTIONS = 5
+
     def __init__(self, user, game):
         self._game = game
         self._user = user
@@ -35,7 +38,7 @@ class LogicGenerator:
         """
         pass
 
-    def generate_questions(self, questions_number):
+    def generate_questions(self, game_type):
         """
         Will generate the questions based on the user artists preferences
         :return:
