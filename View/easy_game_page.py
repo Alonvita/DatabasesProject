@@ -124,7 +124,7 @@ def showQuestion(Gamer_name, window, frame, GameInfoDict, numberOfQ, answers, ge
         message1 = Label(frame, text='you grade: ' + str(grade), fg='black', font='Ariel 16 bold')
         message1.grid(row=0, column=0, pady=(5, 5))
 
-        bottonEasy = Button(frame, text='Back to menu', bg="blue", fg="white", font='Ariel 12 bold',
+        bottonEasy = Button(frame, text='Back to menu', bg="green", fg="white", font='Ariel 12 bold',
                             command=lambda: start(window, Gamer_name))
         bottonEasy.grid(row=1, column=0, pady=(5, 5))
 

@@ -42,7 +42,7 @@ def leaderboard_window(window, Gamer_name):
         i += 1
         treeview.grid(row=i, column=0, pady=(10, 10))
 
-    bottonEasy = Button(frame, text='Go back', bg="blue", fg="white", font='Ariel 12 bold',
+    bottonEasy = Button(frame, text='Go back', bg="green", fg="white", font='Ariel 12 bold',
                         command=lambda: start(window, Gamer_name))
     bottonEasy.grid(row=i+1, column=0, pady=(5, 5))
 
