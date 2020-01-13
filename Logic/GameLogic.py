@@ -60,26 +60,27 @@ def load_user_from_data_base(username):
     return Queries.get_user_id(username)
 
 
-# def end(username, answers_list, game_dict, game_type):
-#     answers_list = game.get_answers_list()
-#
-#     questions_dict = game.get_questions_dict()
-#
-#     # tag the answer (True/False for right/wrong)
-#     answers_list.append(questions_dict[question][True] == answer)
-#
-#     # check if score should be calculated
-#     if len(questions_dict) == answers_list:
-#         # tag the game ending time
-#         game.set_end_time(self.collect_time_stamp())
-#
-#         # calculate the score
-#         game.set_final_score(
-#             self.generate_final_score()(
-#                 len(questions_dict),
-#                 answers_list.count(True)
-#             )
-#         )
+def end(username, answers_list, game_dict, game_type):
+    return MOCK_GAME_SCORE
+    # answers_list = game.get_answers_list()
+    #
+    # questions_dict = game.get_questions_dict()
+    #
+    # # tag the answer (True/False for right/wrong)
+    # answers_list.append(questions_dict[question][True] == answer)
+    #
+    # # check if score should be calculated
+    # if len(questions_dict) == answers_list:
+    #     # tag the game ending time
+    #     game.set_end_time(self.collect_time_stamp())
+    #
+    #     # calculate the score
+    #     game.set_final_score(
+    #         self.generate_final_score()(
+    #             len(questions_dict),
+    #             answers_list.count(True)
+    #         )
+    #     )
 
 
 def generate_questions(user_name, game_type):
@@ -105,16 +106,27 @@ def generate_questions(user_name, game_type):
 
 
 def get_all_preferences():
-    return Queries.get_all_genres()
+    return {
+        "a": ['a', 'b', 'c', 'd', 'e', 'f', 'g']
+    }
+
+    # return Queries.get_all_genres()
 
 
 def get_leaderboard():
-    leaderboard = list()
 
-    for game_type in GAME_TYPES:
-        leaderboard.append(Queries.get_top_players(game_type))
+    return {
+        "EASY": [['Player name', 'score'], ['baba', 100], ['gaga', 98], ['jaja', 90]],
+        "HARD": [['Player name', 'score'], ['nana', 100], ['mama', 96], ['haha', 95]],
+        "CHALLENGING": [['Player name', 'score'], ['lala', 99], ['tata', 95], ['rara', 90]]
+    }
 
-    return leaderboard
+    # leaderboard = dict()
+    #
+    # for game_type in GAME_TYPES:
+    #     leaderboard[game_type] = Queries.get_top_players(game_type)
+    #
+    # return leaderboard
 
 
 def start(username, game_type):
@@ -134,9 +146,83 @@ def start(username, game_type):
     """
 
     # TODO: create a game depending on the game_type
-    pass
+    if game_type == "EASY" or game_type == "HARD":
+        return generate_easy_or_hard_games()
+
+    return generate_challenging_game()
+
+
+def generate_challenging_game():
+    return MOCK_CHALLENGING_DICT
 
 
 def generate_easy_or_hard_games():
-    pass
+    return MOCK_DICT
 
+
+MOCK_DICT = {
+        "artist_name": "Adel",
+        "properties": ["Country: UK", "Date: 12.12.1980", "Song1: Alon kaka", "Song2: Sara kaka", "Song3: Yana kaka"],
+        "questions": {
+            "q1": {
+                "text": "Country?",
+                "answers": ["Israel", "USA", "Poland", "UK"],
+                "true": "UK"
+            },
+            "q2": {
+                "text": "Date?",
+                "answers": ["12.12.1984", "12.12.1979", "12.12.1980", "12.12.1981"],
+                "true": "12.12.1980"
+            },
+            "q3": {
+                "text": "Song1?",
+                "answers": ["song1_a1", "song1_a2", "song1_a3", "Alon kaka"],
+                "true": "right_answer"
+            },
+            "q4": {
+                "text": "Song2?",
+                "answers": ["song2_a1", "song2_a2", "Sara kaka", "song2_a3"],
+                "true": "right_answer"
+            },
+            "q5": {
+                "text": "Song3?",
+                "answers": ["Yana kaka", "song3_a1", "song3_a2", "song3_a3"],
+                "true": "Yana kaka"
+            }
+        }
+    }
+
+
+MOCK_CHALLENGING_DICT = GameInfoDict = {
+        "artist_name": ["Adel", "Adel2", "Adel3", "Ade4", "Adel5"],
+        "properties": [["Country: UK", "Date: 12.12.1980", "Song1: Alon kaka", "Song2: Sara kaka", "Song3: Yana kaka"], ["Country1: UK", "Date1: 12.12.1980", "Song11: Alon kaka", "Song12: Sara kaka", "Song13: Yana kaka"], ["Country2: UK", "Date2: 12.12.1980", "Song21: Alon kaka", "Song22: Sara kaka", "Song23: Yana kaka"], ["Country3: UK", "Date3: 12.12.1980", "Song31: Alon kaka", "Song32: Sara kaka", "Song33: Yana kaka"], ["Country4: UK", "Date4: 12.12.1980", "Song41: Alon kaka", "Song42: Sara kaka", "Song43: Yana kaka"]],
+        "questions": {
+            "q1": {
+                "text": "Country?",
+                "answers": ["Israel", "USA", "Poland", "UK"],
+                "true": "UK"
+            },
+            "q2": {
+                "text": "Date?",
+                "answers": ["12.12.1984", "12.12.1979", "12.12.1980", "12.12.1981"],
+                "true": "12.12.1980"
+            },
+            "q3": {
+                "text": "Song1?",
+                "answers": ["song1_a1", "song1_a2", "song1_a3", "Alon kaka"],
+                "true": "right_answer"
+            },
+            "q4": {
+                "text": "Song2?",
+                "answers": ["song2_a1", "song2_a2", "Sara kaka", "song2_a3"],
+                "true": "right_answer"
+            },
+            "q5": {
+                "text": "Song3?",
+                "answers": ["Yana kaka", "song3_a1", "song3_a2", "song3_a3"],
+                "true": "Yana kaka"
+            }
+        }
+    }
+
+MOCK_GAME_SCORE = 1200
