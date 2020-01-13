@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import ttk
 from tkinter.ttk import Treeview
+from Logic import GameLogic as gL
 
 from View import start_menu
 
@@ -17,11 +18,7 @@ def leaderboard_window(window, Gamer_name):
     name = Label(frame, text='Leaderboard', fg='black', font='Ariel 16 bold')
     name.grid(row=0, column=0, pady=(10, 10))
 
-    leaderboard={
-        "EASY": [['Player name', 'score'], ['baba', 100], ['gaga', 98], ['jaja', 90]],
-        "HARD": [['Player name', 'score'], ['nana', 100], ['mama', 96], ['haha', 95]],
-        "CHALLENGING": [['Player name', 'score'], ['lala', 99], ['tata', 95], ['rara', 90]]
-    }
+    leaderboard = gL.get_leaderboard()
 
     i = 1
     for key in leaderboard.keys():

@@ -1,5 +1,6 @@
 from tkinter import *
 from View import start_menu
+import Logic.GameLogic as gL
 
 
 def preference_window(window, name):
@@ -15,11 +16,7 @@ def preference_window(window, name):
     label.grid(row=0, columnspan=7, pady=(10, 10))
 
     # get from alon the preference dictionary
-    preferences_dict = {
-        "a": ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
-        "b": ['h', 'i', 'j', 'k', 'l', 'm', 'n'],
-        "c": ['o', 'p', 'q', 'r', 's', 't', 'u'],
-    }
+    preferences_dict = gL.get_all_preferences()
 
     choice_dic = {}
     for preference in list(preferences_dict.keys()):

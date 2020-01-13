@@ -1,6 +1,7 @@
 from random import randint
 from tkinter import *
 from View import start_menu
+from Logic import GameLogic as gL
 
 
 def challenging_game_window(window, Gamer_name):
@@ -12,38 +13,8 @@ def challenging_game_window(window, Gamer_name):
     frame.grid_columnconfigure(0, weight=1)
     frame.grid_rowconfigure(0, weight=1)
 
-    # GameInfoDict = game.start(Gamer_name, 3)
-    GameInfoDict = {
-        "artist_name": ["Adel", "Adel2", "Adel3", "Ade4", "Adel5"],
-        "properties": [["Country: UK", "Date: 12.12.1980", "Song1: Alon kaka", "Song2: Sara kaka", "Song3: Yana kaka"], ["Country1: UK", "Date1: 12.12.1980", "Song11: Alon kaka", "Song12: Sara kaka", "Song13: Yana kaka"], ["Country2: UK", "Date2: 12.12.1980", "Song21: Alon kaka", "Song22: Sara kaka", "Song23: Yana kaka"], ["Country3: UK", "Date3: 12.12.1980", "Song31: Alon kaka", "Song32: Sara kaka", "Song33: Yana kaka"], ["Country4: UK", "Date4: 12.12.1980", "Song41: Alon kaka", "Song42: Sara kaka", "Song43: Yana kaka"]],
-        "questions": {
-            "q1": {
-                "text": "Country?",
-                "answers": ["Israel", "USA", "Poland", "UK"],
-                "true": "UK"
-            },
-            "q2": {
-                "text": "Date?",
-                "answers": ["12.12.1984", "12.12.1979", "12.12.1980", "12.12.1981"],
-                "true": "12.12.1980"
-            },
-            "q3": {
-                "text": "Song1?",
-                "answers": ["song1_a1", "song1_a2", "song1_a3", "Alon kaka"],
-                "true": "right_answer"
-            },
-            "q4": {
-                "text": "Song2?",
-                "answers": ["song2_a1", "song2_a2", "Sara kaka", "song2_a3"],
-                "true": "right_answer"
-            },
-            "q5": {
-                "text": "Song3?",
-                "answers": ["Yana kaka", "song3_a1", "song3_a2", "song3_a3"],
-                "true": "Yana kaka"
-            }
-        }
-    }
+    GameInfoDict = gL.start(Gamer_name, 3)
+
 
     message1 = Label(frame, text='You will play on 5 artists try to remember all the facts', fg='black',
                      font='Ariel 16 bold')
@@ -127,8 +98,7 @@ def showQuestion(Gamer_name, window, frame, GameInfoDict, numberOfQ, answers, ge
         right_answer.grid(row=5, column=0, pady=(10, 10))
     else:
         del answers[0]
-        # grade = game.end(answers, GameInfoDict, 3)
-        grade = 90
+        grade = gL.end(Gamer_name, answers, GameInfoDict, 3)
         list = frame.grid_slaves()
         for l in list:
             l.destroy()

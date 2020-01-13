@@ -1,6 +1,7 @@
 from random import randint
 from tkinter import *
 from View import start_menu
+from Logic import GameLogic as gL
 
 
 def hard_game_window(window, Gamer_name):
@@ -12,38 +13,7 @@ def hard_game_window(window, Gamer_name):
     frame.grid_columnconfigure(0, weight=1)
     frame.grid_rowconfigure(0, weight=1)
 
-    # GameInfoDict = game.start(Gamer_name, 2)
-    GameInfoDict = {
-        "artist_name": "Adel",
-        "properties": ["Country: UK", "Date: 12.12.1980", "Song1: Alon kaka", "Song2: Sara kaka", "Song3: Yana kaka"],
-        "questions": {
-            "q1": {
-                "text": "Country?",
-                "answers": ["Israel", "USA", "Poland", "UK"],
-                "true": "UK"
-            },
-            "q2": {
-                "text": "Date?",
-                "answers": ["12.12.1984", "12.12.1979", "12.12.1980", "12.12.1981"],
-                "true": "12.12.1980"
-            },
-            "q3": {
-                "text": "Song1?",
-                "answers": ["song1_a1", "song1_a2", "song1_a3", "Alon kaka"],
-                "true": "right_answer"
-            },
-            "q4": {
-                "text": "Song2?",
-                "answers": ["song2_a1", "song2_a2", "Sara kaka", "song2_a3"],
-                "true": "right_answer"
-            },
-            "q5": {
-                "text": "Song3?",
-                "answers": ["Yana kaka", "song3_a1", "song3_a2", "song3_a3"],
-                "true": "Yana kaka"
-            }
-        }
-    }
+    GameInfoDict = gL.start(Gamer_name, 2)
 
     message1 = Label(frame, text='You will not know which artist you will play .. Try to guess', fg='black', font='Ariel 16 bold')
     message1.grid(row=0, column=0, pady=(5, 5))
@@ -109,8 +79,7 @@ def showQuestion(Gamer_name, window, frame, GameInfoDict, numberOfQ, answers, ge
         right_answer.grid(row=5, column=0, pady=(10, 10))
     else:
         del answers[0]
-        # grade = game.end(answers, GameInfoDict, 2)
-        grade = 90
+        grade = gL.end(Gamer_name, answers, GameInfoDict, 2)
         list = frame.grid_slaves()
         for l in list:
             l.destroy()
