@@ -6,7 +6,7 @@ CREATE DATABASE IF NOT EXISTS funny_name;
 GRANT ALL PRIVILEGES ON funny_name.* TO 'funny_name'@'localhost' WITH GRANT OPTION;
 GRANT FILE ON *.* to 'funny_name'@'localhost';
 USE funny_name;
-
+SET GLOBAL local_infile = ON;
 CREATE TABLE IF NOT EXISTS albums ( -- replicate
     id                      BIGINT UNSIGNED, -- PK
     name                    VARCHAR(255),
