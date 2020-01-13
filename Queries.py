@@ -53,6 +53,57 @@ def try_command():
     limit 3;"""
     return get_info_by_command(cmd)
 
+def get_songs(artist_name):
+    command = """SELECT songs.name FROM artist JOIN artist_to_credit 
+    ON artist_to_credit.artist = artist.id JOIN songs ON songs.artist_credit = artist_to_credit.artist 
+    WHERE artist.name = """ + artist_name + "GROUP BY songs.name limit 3;"
+    return get_info_by_command(command)
+
+
+def get_genre_by_artist(artist_name):
+    command = """SELECT artists_genre.genre FROM artist JOIN artists_genre 
+        ON artists_genre.artist_id = artist.id  
+        WHERE artist.name = """ + artist_name + " GROUP BY artists_genre.genre;"""
+    return get_info_by_command(command)
+
+
+def get_genre(genre_name):
+    command = """INSERT INTO users_preferences
+            SELECT distinct 2, "artist",artist.name ,0
+            FROM artist jOIN artist_genres ON artist.id = artist_genres.artist_id
+            WHERE artist_genres.genre = """ + genre_name + """AND artist.name NOT IN
+             (SELECT preference FROM users_preferences WHERE user_id = 2)
+             LIMIT 4;
+            """
+    return get_info_by_command(command)
+
+
+def get_artist(artist_name):
+    command = "SELECT * FROM artist WHERE artist.name = " + "'" + artist_name + "'"
+    return get_info_by_command(command)
+
+
+def get_artist(artist_name):
+    command = "SELECT * FROM artist WHERE artist.name = " + "'" + artist_name + "'"
+    artist_info = list(get_info_by_command(command)._getitem_(0))
+    birth_date = str(artist_info[7])+"/"+str(artist_info[6])+"/"+str(artist_info[5])
+    artist_data = list([artist_info[i] for i in range(1, 4)])
+    artist_data.append(birth_date)
+    return artist_data
+
+
+def get_songs(artist_name):
+    command = """SELECT songs.name 
+    FROM artist 
+    JOIN artist_to_credit ON artist_to_credit.artist = artist.id 
+    JOIN songs ON songs.artist_credit = artist_to_credit.artist 
+    WHERE artist.name = '""" + artist_name + """'
+    GROUP BY songs.name 
+    limit 3;"""
+    songs_list = [song[0] for song in get_info_by_command(command)]
+    return songs_list
+
+
 def main():
     execute_scripts_from_file("build_tables.sql")
    # get_artist("Adele")
