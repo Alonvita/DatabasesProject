@@ -49,12 +49,12 @@ def preference_window(window, name):
         rowindex += 1
         colindex = 0
 
-    bottonSend = Button(frame, text='login', bg="green", fg="black", font='Ariel 8 bold',
-                        command=lambda: preference_button(window, preferences_dict, choice_dic))
+    bottonSend = Button(frame, text='Continue', bg="green", fg="black", font='Ariel 8 bold',
+                        command=lambda: preference_button(window, preferences_dict, choice_dic, name))
     bottonSend.grid(row=rowindex, columnspan=7, pady=(10, 5))
 
 
-def preference_button(window, pre_dictionary, choice_dic):
+def preference_button(window, pre_dictionary, choice_dic, name):
     return_dictionary = {}
     for preference in list(choice_dic.keys()):
         return_dictionary[preference] = []
@@ -63,6 +63,5 @@ def preference_button(window, pre_dictionary, choice_dic):
             if choice.get() == 1:
                 return_dictionary[preference].append(pre_dictionary[preference][i])
             i += 1
-    print(return_dictionary)
     # send to alon the return_dictionary
-    start_menu.start_menu_window(window)
+    start_menu.start_menu_window(window, name)

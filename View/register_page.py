@@ -36,10 +36,11 @@ def register_window(window, fileBackground):
                          command=lambda: login_page.login_window(window, fileBackground))
     bottonLogin.grid(row=4, columnspan=2, pady=(0, 10))
 
+
 def validateRegister(frame, name, pword):
     print(name.get(), pword.get())
-    validateR = -1  # alon_func_login(name, pword)
-    if validateR == -1:
+    validateR = 0  # autications(name, pword)
+    if validateR == 0:
         label = Label(frame, text='Exist', fg='red', font='Ariel 8 bold')
         label.grid(row=5, columnspan=2, pady=(10, 10))
     else:

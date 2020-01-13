@@ -40,9 +40,9 @@ def validateLogin(window, frame, name, pword):
     print(name.get(), pword.get())
     status = 0  # , user = Authentications.Authenticator.login(name, pword)
     if status == -1:
-        Need = Label(frame, text='Need to Register', fg='red', font='Ariel 8 bold')
+        Need = Label(frame, text='Not good', fg='red', font='Ariel 8 bold')
         Need.grid(row=5, columnspan=2, pady=(10, 10))
     elif status == 0:
         preferences_page.preference_window(window, name)
     else:
-        start_menu.start_menu_window(window)
+        start_menu.start_menu_window(window, name)
