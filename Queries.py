@@ -16,6 +16,7 @@ def run():
     )
 
     mycursor = mydb.cursor()
+    # execute_scripts_from_file("build_tables.sql")
 
 
 def execute_scripts_from_file(filename):
@@ -76,13 +77,14 @@ def get_preferred_artists(user_id):
 
 
 def get_preferred_genres(user_id):
-    cmd = "SELECT preference  FROM funny_name.users_preferences WHERE user_id = "+str(user_id)+" AND type = 'genre';"
+    print("ud:"+str(user_id))
+    cmd = "SELECT preference  FROM funny_name.users_preferences WHERE users_preferences.user_id = "+str(user_id)+" AND users_preferences.type = 'genre';"
     genres = get_info_by_command(cmd)
     return genres
 
 
 def get_artist_info(artist_name):
-    command = "SELECT * FROM artist WHERE artist.name = " + "'" + artist_name + "'"
+    command = "SELECT * FROM artist WHERE artist.name = " + "'" + artist_name + "';"
     artist_info = list(get_info_by_command(command).__getitem__(0))
     birth_date = str(artist_info[7])+"/"+str(artist_info[6])+"/"+str(artist_info[5])
     artist_data = list([artist_info[i] for i in range(1, 4)])
@@ -91,7 +93,7 @@ def get_artist_info(artist_name):
 
 
 def get_user_id(user_name):
-    command = "SELECT user_id FROM funny_name.users WHERE username = '" + user_name + ";"
+    command = "SELECT user_id FROM funny_name.users WHERE username = '" + user_name + "' ;"
     return get_info_by_command(command)
 
 
@@ -164,11 +166,6 @@ def get_top_players(game_type):  # todo: parse info
     top = get_info_by_command(cmd)
     return top
 
-
-if __name__ == '__main__':
-    run()
-    execute_scripts_from_file("build_tables.sql")
-    print(get_genre_by_artist("Adele"))
 
 """
 List of commands:
