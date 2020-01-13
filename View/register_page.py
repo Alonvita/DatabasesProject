@@ -1,5 +1,6 @@
 from tkinter import *
 from View import login_page
+from Logic import GameLogic as gL
 
 
 def register_window(window, fileBackground):
@@ -39,7 +40,7 @@ def register_window(window, fileBackground):
 
 def validateRegister(frame, name, pword):
     print(name.get(), pword.get())
-    validateR = 0  # autications(name, pword)
+    validateR = gL.register(name, pword)
     if validateR == 0:
         label = Label(frame, text='Exist', fg='red', font='Ariel 8 bold')
         label.grid(row=5, columnspan=2, pady=(10, 10))
