@@ -1,17 +1,13 @@
+import Queries
 import datetime
 
 
-class LogicGenerator:
-    EASY_GAME_NUMBER_OF_QUESTIONS = 5
-    EASY_GAME_NUMBER_OF_QUESTIONS = 5
+class LogicUtilities:
+    QUESTIONS_NUMBER = 5
 
-    def __init__(self, user, game):
-        self._game = game
-        self._user = user
-
-    def question_answered(self, question, answer):
-        answers_list = self._game.get_answers_list()
-        questions_dict = self._game.get_questions_dict()
+    def question_answered(self, question, answer, game):
+        answers_list = game.get_answers_list()
+        questions_dict = game.get_questions_dict()
 
         # tag the answer (True/False for right/wrong)
         answers_list.append(questions_dict[question][True] == answer)
@@ -19,30 +15,34 @@ class LogicGenerator:
         # check if score should be calculated
         if len(questions_dict) == answers_list:
             # tag the game ending time
-            self._game.set_end_time(self.collect_time_stamp())
+            game.set_end_time(self.collect_time_stamp())
 
             # calculate the score
-            self._game.set_final_score(
+            game.set_final_score(
                 self.generate_final_score()(
                     len(questions_dict),
                     answers_list.count(True)
                 )
             )
 
-    def generate_properties(self, properties_number):
+    def generate_properties(self, user_name, game_type):
         """
         Will generate the properties from DB based on the user preferences
 
-        :param properties_number:
+        :param user_name: the user name
+        :param game_type: the game type
         :return:
         """
         pass
 
-    def generate_questions(self, game_type):
+    def generate_questions(self, user_name, game_type):
         """
         Will generate the questions based on the user artists preferences
+
         :return:
         """
+        user_id = Queries.get_user_id(user_name)
+
         pass
 
     @staticmethod

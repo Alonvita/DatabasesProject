@@ -12,8 +12,7 @@ class GamesGenerator:
         self._logic_generator = lG()
 
     def start(self, game_type, user_name):
-        if game_type not in self._games_type_dict:
+        if game_type not in self._games_type_dict.keys():
             raise ValueError("Unknown game type: " + game_type)
 
-        # TODO: pull from database the dictionary and pass it to Itai
-
+        return self._logic_generator.generate_questions(user_name, game_type)

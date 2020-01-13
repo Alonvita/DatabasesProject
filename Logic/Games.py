@@ -1,4 +1,4 @@
-from Logic.LogicGenerator import LogicGenerator as lG
+from Logic.LogicUtilities import LogicUtilities as lG
 
 
 class Game:

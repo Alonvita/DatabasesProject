@@ -21,3 +21,7 @@ class User:
         """
         # TODO: push to DB
         pass
+
+    def get_preferences_dict(self):
+        # TODO: pull preferences dict from database.
+        pass

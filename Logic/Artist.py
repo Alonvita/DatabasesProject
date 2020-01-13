@@ -1,5 +1,5 @@
 class Artist:
-    def __init__(self, name, id_num, genre, birth_year, songs_list, albums_list):
+    def __init__(self, name, id_num, genre, birth_year, soוngs_list, albums_list):
         self._name = name
         self._id = id_num
         self._genre = genre
