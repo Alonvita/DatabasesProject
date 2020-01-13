@@ -40,7 +40,7 @@ def register_window(window, fileBackground):
 
 def validateRegister(frame, name, pword):
     print(name.get(), pword.get())
-    validateR = gL.register(name, pword)
+    validateR = gL.register(name.get(), pword.get())
     if validateR == 0:
         label = Label(frame, text='Exist', fg='red', font='Ariel 8 bold')
         label.grid(row=5, columnspan=2, pady=(10, 10))

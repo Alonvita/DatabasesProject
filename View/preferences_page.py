@@ -60,5 +60,5 @@ def preference_button(window, pre_dictionary, choice_dic, name):
             if choice.get() == 1:
                 return_dictionary[preference].append(pre_dictionary[preference][i])
             i += 1
-    # send to alon the return_dictionary
+    gL.add_preferences_to_user(name.get(), return_dictionary)
     start_menu.start_menu_window(window, name)

@@ -16,7 +16,7 @@ def run():
     )
 
     mycursor = mydb.cursor()
-    # execute_scripts_from_file("build_tables.sql")
+    execute_scripts_from_file("../build_tables.sql")
 
 
 def execute_scripts_from_file(filename):
@@ -41,21 +41,25 @@ def execute_scripts_from_file(filename):
 
 def get_info_by_command(command_string):
     mycursor.execute(command_string)
+    print(command_string)
+
     myresult = mycursor.fetchall()
-    for x in myresult:
-        print(x)
     return myresult
 
+def set_info_by_command(command_string):
+    mycursor.execute(command_string)
+    mydb.commit()
+    print(command_string)
 
 def get_songs(artist_name):
-    command = """SELECT songs.name 
-    FROM artist 
-    JOIN artist_to_credit ON artist_to_credit.artist = artist.id 
+    command = """SELECT songs.name FROM artist JOIN artist_to_credit ON artist_to_credit.artist = artist.id 
     JOIN songs ON songs.artist_credit = artist_to_credit.artist 
-    WHERE artist.name = '""" + artist_name + """'
-    GROUP BY songs.name 
-    limit 3;"""
-    songs_list = [song[0] for song in get_info_by_command(command)]
+    WHERE artist.name = '""" + artist_name + """' GROUP BY songs.name limit 3;"""
+    info = get_info_by_command(command)
+    if len(info) is 0:
+        return -1
+    songs_list = [song[0] for song in info]
+    print(songs_list[0])
     return songs_list
 
 
@@ -63,29 +67,43 @@ def get_genre_by_artist(artist_name):
     command = """SELECT artist_genres.genre FROM artist JOIN artist_genres 
         ON artist_genres.artist_id = artist.id  
         WHERE artist.name = '""" + artist_name + "' GROUP BY artist_genres.genre;"""
-    return [g[0] for g in get_info_by_command(command)]
+    info = get_info_by_command(command)
+    if len(info)==0:
+        return -1
+    return [g[0] for g in info]
 
 
 def get_preferred_artists(user_id):
     cmd = "SELECT preference FROM funny_name.users_preferences WHERE users_preferences.count < 5 " \
           "AND users_preferences.user_id = " + str(user_id) + " AND users_preferences.type = 'artist' limit 4;"
-    artists_names = [a[0] for a in get_info_by_command(cmd)]
+    info = get_info_by_command(cmd)
+    if len(info) == 0:
+        return -1
+    artists_names = [a[0] for a in info]
     artists_list = list()
     for a_n in artists_names:
-        artists_list.append(get_artist_info(a_n))
+        artist_info = list(get_artist_info(a_n))
+        songs = list(get_songs(a_n))
+        artist_info.append(songs)
+        artists_list.append(artist_info)
     return artists_list
 
 
 def get_preferred_genres(user_id):
-    print("ud:"+str(user_id))
-    cmd = "SELECT preference  FROM funny_name.users_preferences WHERE users_preferences.user_id = "+str(user_id)+" AND users_preferences.type = 'genre';"
+
+    cmd = "SELECT preference  FROM funny_name.users_preferences WHERE user_id = "+str(user_id)+" AND type = 'genre';"
     genres = get_info_by_command(cmd)
-    return genres
+    if len(genres)==0:
+         return False
+    return True
 
 
 def get_artist_info(artist_name):
-    command = "SELECT * FROM artist WHERE artist.name = " + "'" + artist_name + "';"
-    artist_info = list(get_info_by_command(command).__getitem__(0))
+    command = "SELECT * FROM artist WHERE artist.name = " + "'" + artist_name + "'"
+    info = get_info_by_command(command)
+    if len(info) == 0:
+        return -1
+    artist_info = list(info.__getitem__(0))
     birth_date = str(artist_info[7])+"/"+str(artist_info[6])+"/"+str(artist_info[5])
     artist_data = list([artist_info[i] for i in range(1, 4)])
     artist_data.append(birth_date)
@@ -93,45 +111,55 @@ def get_artist_info(artist_name):
 
 
 def get_user_id(user_name):
+
     command = "SELECT user_id FROM funny_name.users WHERE username = '" + user_name + "' ;"
-    return get_info_by_command(command)
-
-
-def add_user(user_name, password):
-    if get_user_id(user_name) is not None:
+    info = get_info_by_command(command)
+    if len(info) == 0:
         return -1
-    insert_user = """INSERT INTO users(username,password)
-                    VALUES ( """ + user_name+", " + password + ");"
-    get_info_by_command(insert_user)
+    info = info[0][0]
+    print(info)
+    return info
 
+
+def add_user(user_name, password1):
+    user_name = str(user_name)
+    password_d = str(password1)
+
+    if get_user_id(user_name) is not -1:
+        return -1
+
+    insert_user = """INSERT INTO users(username, password)
+                    VALUES ( '""" + user_name+"', '" + password_d + "');"
+    set_info_by_command(insert_user)
     user_id = str(get_user_id(user_name))
     return user_id
 
 
 def add_preferences(user_id, properties_list):
-    if properties_list is not None and len(properties_list) != 0:
+    if len(properties_list) != 0:
         for prop in properties_list:
             for pref in properties_list[prop]:
-                insert_pref = """INSERT INTO users_preferences(""" + user_id + "," + prop + "," + pref+")"
-                get_info_by_command(insert_pref)
-                if prop is "Genre":
+                insert_pref = """INSERT INTO funny_name.users_preferences(user_id,type,preference) VALUES(""" + str(user_id) + ",'" + "genre" + "','" + pref+"');"
+                print(insert_pref)
+                set_info_by_command(insert_pref)
+                if prop is 'aaa':
                     cmd = """INSERT INTO users_preferences
-                        SELECT distinct""" + user_id + """, "artist",artist.name ,0
+                        SELECT distinct """ + str(user_id) + """, "artist",artist.name ,0
                         FROM artist JOIN artist_genres ON artist.id = artist_genres.artist_id
-                        WHERE artist_genres.genre = """ + prop + """" 
+                        WHERE artist_genres.genre = '""" + pref + """'
                         AND artist.name NOT IN (SELECT preference  FROM funny_name.users_preferences WHERE user_id = """\
-                        + user_id +""")
+                        + str(user_id) +""")
                         LIMIT 4;
                         """
-                    get_info_by_command(cmd)
+                    set_info_by_command(cmd)
 
 
 def confirm_user(user_name, password):
     cmd = "SELECT user_id FROM funny_name.users WHERE username = '"+user_name+"' AND password = "+password+";"
-    user_id = get_info_by_command(cmd)
-    if user_id is not None:
-        return user_id
-    return -1
+    info = get_info_by_command(cmd)
+    if len(info) == 0:
+        return -1
+    return info
 
 
 def get_all_genres():
@@ -140,7 +168,10 @@ def get_all_genres():
         SELECT name, COUNT(*) as sum FROM funny_name.genres join
          artist_genres on artist_genres.genre = genres.name GROUP BY name ORDER BY sum DESC limit 50) AS aa;
          """
-    genres = [genre[0] for genre in get_info_by_command(cmd)]
+    info = get_info_by_command(cmd)
+    if len(info) == 0:
+        return -1
+    genres = [genre[0] for genre in info]
     return genres
 
 
@@ -162,8 +193,17 @@ def add_game(typ, score, user_id):
 
 
 def get_top_players(game_type):  # todo: parse info
+    if game_type == "EASY":
+        game_type = "first_game_points"
+    elif game_type == "HARD":
+        game_type = "second_game_points"
+    else:
+        game_type = "third_game_points"
     cmd = "SELECT username,first_game_points  FROM users ORDER BY users." + game_type + " DESC limit 3;"
-    top = get_info_by_command(cmd)
+    info = get_info_by_command(cmd)
+    if len(info) == 0:
+        return -1
+    top = [p for p in info]
     return top
 
 

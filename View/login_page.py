@@ -38,7 +38,7 @@ def login_window(window, fileBackground):
 
 def validateLogin(window, frame, name, pword):
     print(name.get(), pword.get())
-    status = gL.login(name, pword)
+    status = gL.login(name.get(), pword.get())
     if status == -1:
         Need = Label(frame, text='Not good', fg='red', font='Ariel 8 bold')
         Need.grid(row=5, columnspan=2, pady=(10, 10))

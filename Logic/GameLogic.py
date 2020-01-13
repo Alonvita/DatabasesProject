@@ -46,18 +46,22 @@ def register(user_name, password):
     add_success = 1
     add_fail = 0
 
+    print("Game logic: "+user_name+" "+password)
     if Queries.add_user(user_name, password) == ADD_FAILURE:
         return add_fail
 
     return add_success
 
 
-def add_preferences_to_user(username, properties_list):
-    Queries.add_preferences(load_user_from_data_base(username), properties_list)
+def add_preferences_to_user(username, properties_dict):
+    user_id = load_user_from_data_base(username)
+
+    print(properties_dict)
+    Queries.add_preferences(user_id, properties_dict)
 
 
 def load_user_from_data_base(username):
-    return Queries.get_user_id(username)
+    return Queries.get_user_id(str(username))
 
 
 def end(username, answers_list, game_dict, game_type):
