@@ -27,7 +27,7 @@ def game_menu_window(window, Gamer_name):
                         command=lambda: challenging(window, Gamer_name))
     bottonChallenging.grid(row=3, column=0, pady=(10, 5))
 
-    bottonEasy = Button(frame, text='Go back', bg="blue", fg="white", font='Ariel 12 bold',
+    bottonEasy = Button(frame, text='Go back', bg="green", fg="white", font='Ariel 12 bold',
                         command=lambda: start(window, Gamer_name))
     bottonEasy.grid(row=4, column=0, pady=(5, 5))
 
