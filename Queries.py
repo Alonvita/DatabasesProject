@@ -20,6 +20,7 @@ connect to server
         allow_local_infile=True
         )
         mycursor = mydb.cursor()
+        execute_scripts_from_file("../build_tables.sql")
     except mysql.connector.Error as err:
         print("Something went wrong: {}".format(err))
 
@@ -97,11 +98,38 @@ def get_user_id(user_name, password):
     :param password:
     :return:     if uer name od password are taken, return -1 else-return user id
     """
-    cmd = "SELECT user_id FROM funny_name.users WHERE username = '"+user_name+"' AND password = "+password+";"
+    cmd = "SELECT user_id FROM funny_name.users WHERE username = '"+user_name+"' AND password = '"+password+"';"
     info = get_info_by_command(cmd)
     if len(info) == 0:
         return -1
-    return info
+    return info[0][0]
+
+def get_user_id_by_name(user_name):
+    """
+    check if user exist by user name only.
+    to prevent two users with same name
+    :param user_name:
+    :param password:
+    :return:     if uer name od password are taken, return -1 else-return user id
+    """
+    cmd = "SELECT user_id FROM funny_name.users WHERE username = '"+user_name+"';"
+    info = get_info_by_command(cmd)
+    if len(info) == 0:
+        return -1
+    return info[0][0]
+
+def get_preferred_genres(user_id):
+    """
+    if there is  users ganres
+    :param user_id:
+    :return:
+    """
+    print(user_id)
+    cmd = "SELECT preference  FROM funny_name.users_preferences WHERE user_id = "+str(user_id)+" AND type = 'genre';"
+    genres = get_info_by_command(cmd)
+    if len(genres)==0:
+         return False
+    return True
 
 
 def add_preferences(user_id, genres_list):  # todo: change only to genre
@@ -136,14 +164,18 @@ def add_user(user_name, password1):
     """
     user_name = str(user_name)
     password_d = str(password1)
+    #check if user name taken
+    user_id = get_user_id_by_name(user_name)
+    if user_id is not -1:
+        return -1
 
-    if get_user_id(user_name) is not -1:
+    if get_user_id(user_name,password_d) is not -1:
         return -1
 
     insert_user = """INSERT INTO users(username, password)
                     VALUES ( '""" + user_name+"', '" + password_d + "');"
     set_info_by_command(insert_user)
-    user_id = str(get_user_id(user_name))
+    user_id = str(get_user_id(user_name,password_d))
     return user_id
 
 
@@ -199,6 +231,7 @@ def get_genre_by_artist(artist_name):
     :param artist_name:
     :return:  -1 if no genres, retruen list of genres
     """
+    print(artist_name)
     command = """SELECT artist_genres.genre FROM artist JOIN artist_genres 
         ON artist_genres.artist_id = artist.id  
         WHERE artist.name = '""" + artist_name + "' GROUP BY artist_genres.genre;"""
@@ -302,12 +335,13 @@ def get_top_players(game_type):  # todo: parse info
     return top
 
 
+
+"""
+
 if __name__ == '__main__':
     run()
     execute_scripts_from_file("build_tables.sql")
     print(get_genre_by_artist("Adele"))
-
-"""
 List of commands:
 get artist_songs: (adele songs limit list to 3 - no duplicated song names)
     SELECT songs.name 

@@ -25,7 +25,7 @@ ADD_FAILURE = -1
 
 
 def login(username, password):
-    user_id = load_user_from_data_base(username)
+    user_id = load_user_from_data_base(username,password)
 
     if user_id == USER_DOESNT_EXIST:
         return USER_DOESNT_EXIST
@@ -57,14 +57,14 @@ def register(user_name, password):
 
 
 def add_preferences_to_user(username, properties_dict):
-    user_id = load_user_from_data_base(username)
+    user_id =  Queries.get_user_id_by_name(username)
 
     print(properties_dict)
     Queries.add_preferences(user_id, properties_dict)
 
 
-def load_user_from_data_base(username):
-    return Queries.get_user_id(str(username))
+def load_user_from_data_base(username, password):
+    return Queries.get_user_id(str(username), str(password))
 
 
 def end(username, answers_list, game_dict, game_type):
@@ -113,11 +113,10 @@ def generate_questions(user_name, game_type):
 
 
 def get_all_preferences():
-    return {
+   """return {
         "a": ['a', 'b', 'c', 'd', 'e', 'f', 'g']
-    }
-
-    # return Queries.get_all_genres()
+    }"""""
+   return Queries.get_all_genres()
 
 
 def get_leaderboard():
