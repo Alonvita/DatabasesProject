@@ -2,6 +2,10 @@ from random import randint
 from tkinter import *
 from View import start_menu
 from Logic import GameLogic as gL
+import Conventions
+
+
+DEBUGGING = True
 
 
 def easy_game_window(window, Gamer_name):
@@ -13,7 +17,10 @@ def easy_game_window(window, Gamer_name):
     frame.grid_columnconfigure(0, weight=1)
     frame.grid_rowconfigure(0, weight=1)
 
-    GameInfoDict = gL.start(Gamer_name, 1)
+    GameInfoDict = gL.start(Gamer_name, Conventions.EASY_GAME_CODE)
+
+    if DEBUGGING:
+        print(GameInfoDict)
 
     message1 = Label(frame, text='you play on: ' + GameInfoDict['artist_name'], fg='black', font='Ariel 16 bold')
     message1.grid(row=0, column=0, pady=(5, 5))

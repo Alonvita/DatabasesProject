@@ -1,4 +1,7 @@
 import Queries
+import Conventions
+
+DEBUGGING = True
 
 GAME_TYPES = [
     "EASY",
@@ -149,8 +152,13 @@ def start(username, game_type):
     :return:
     """
 
+    if DEBUGGING:
+        print("The game type received is: {}".format(game_type))
+
     # TODO: create a game depending on the game_type
-    if game_type == "EASY" or game_type == "HARD":
+    if game_type == Conventions.EASY_GAME_CODE or game_type == Conventions.HARD_GAME_CODE:
+        if DEBUGGING:
+            print("Creating an easy game!")
         return generate_easy_or_hard_games()
 
     return generate_challenging_game()
