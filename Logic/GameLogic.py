@@ -25,7 +25,7 @@ ADD_FAILURE = -1
 
 
 def login(username, password):
-    user_id = load_user_id_from_data_base(username)
+    user_id = load_user_from_data_base(username)
 
     if user_id == USER_DOESNT_EXIST:
         return USER_DOESNT_EXIST
@@ -57,13 +57,13 @@ def register(user_name, password):
 
 
 def add_preferences_to_user(username, properties_dict):
-    user_id = load_user_id_from_data_base(username)
+    user_id = load_user_from_data_base(username)
 
     print(properties_dict)
     Queries.add_preferences(user_id, properties_dict)
 
 
-def load_user_id_from_data_base(username):
+def load_user_from_data_base(username):
     return Queries.get_user_id(str(username))
 
 
@@ -109,38 +109,44 @@ def generate_questions(user_name, game_type):
     '''
 
 
-
     pass
 
 
 def get_all_preferences():
-    return Queries.get_all_genres()
+    return {
+        "a": ['a', 'b', 'c', 'd', 'e', 'f', 'g']
+    }
+
+    # return Queries.get_all_genres()
 
 
 def get_leaderboard():
-    leaderboard = dict()
 
-    for game_type in GAME_TYPES:
-        leaderboard[game_type] = list()
-        leaderboard[game_type].append(['Player name', 'Score'])
+    return {
+        "EASY": [['Player name', 'score'], ['baba', 100], ['gaga', 98], ['jaja', 90]],
+        "HARD": [['Player name', 'score'], ['nana', 100], ['mama', 96], ['haha', 95]],
+        "CHALLENGING": [['Player name', 'score'], ['lala', 99], ['tata', 95], ['rara', 90]]
+    }
 
-        top_players = Queries.get_top_players(game_type)
-
-        for data_list in top_players:
-            leaderboard[game_type].append(data_list)
-
-    return leaderboard
-
-    # FORMAT:
-    # {
-    #     "EASY": [['Player name', 'score'], ['baba', 100], ['gaga', 98], ['jaja', 90]],
-    #     "HARD": [['Player name', 'score'], ['nana', 100], ['mama', 96], ['haha', 95]],
-    #     "CHALLENGING": [['Player name', 'score'], ['lala', 99], ['tata', 95], ['rara', 90]]
-    # }
+    # leaderboard = dict()
+    #
+    # for game_type in GAME_TYPES:
+    #     leaderboard[game_type] = Queries.get_top_players(game_type)
+    #
+    # return leaderboard
 
 
 def start(username, game_type):
     """
+    Easy and hard same dict
+    Challenging dict: {
+        "artist_name": [artists...]
+        "properties": [[artist_1_prop], [artist_2_prop], ... TOTAL 5]
+        "questions: {
+            QUESTIONS DICT (like easy and hard)
+        }
+    }
+
     :param username:
     :param game_type:
     :return:
@@ -149,20 +155,20 @@ def start(username, game_type):
     if DEBUGGING:
         print("The game type received is: {}".format(game_type))
 
-    # create a game depending on the game_type
+    # TODO: create a game depending on the game_type
     if game_type == Conventions.EASY_GAME_CODE or game_type == Conventions.HARD_GAME_CODE:
         if DEBUGGING:
             print("Creating an easy game!")
-        return generate_easy_or_hard_games(username, game_type)
+        return generate_easy_or_hard_games()
 
-    return generate_challenging_game(username, game_type)
+    return generate_challenging_game()
 
 
-def generate_challenging_game(username, game_type):
+def generate_challenging_game():
     return MOCK_CHALLENGING_DICT
 
 
-def generate_easy_or_hard_games(username, game_type):
+def generate_easy_or_hard_games():
     return MOCK_DICT
 
 
