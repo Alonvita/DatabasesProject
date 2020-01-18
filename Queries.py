@@ -377,7 +377,7 @@ def get_preferred_artists(user_id):
 # }
  -1 if there is a problem or list is empty.
     """
-    cmd = "SELECT preference FROM funny_name.users_preferences WHERE users_preferences.count < 5 " \
+    cmd = "SELECT preference FROM  " + settings_info["database"] + ".users_preferences WHERE users_preferences.count < 5 " \
           "AND users_preferences.user_id = " + str(user_id) + " AND users_preferences.type = 'artist' limit 4;"
     info = get_info_by_command(cmd)
     if len(info) == 0:
