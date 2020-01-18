@@ -25,11 +25,8 @@ ADD_FAILURE = -1
 
 
 def login(username, password):
-<<<<<<< HEAD
     user_id = load_user_id_from_data_base(username)
-=======
     user_id = load_user_from_data_base(username,password)
->>>>>>> 986ca718fa2539773d8680f27e374c7ae2d0f027
 
     if user_id == USER_DOESNT_EXIST:
         return USER_DOESNT_EXIST
@@ -61,23 +58,18 @@ def register(user_name, password):
 
 
 def add_preferences_to_user(username, properties_dict):
-<<<<<<< HEAD
     user_id = load_user_id_from_data_base(username)
-=======
     user_id =  Queries.get_user_id_by_name(username)
->>>>>>> 986ca718fa2539773d8680f27e374c7ae2d0f027
 
     print(properties_dict)
     Queries.add_preferences(user_id, properties_dict)
 
 
-<<<<<<< HEAD
 def load_user_id_from_data_base(username):
-    return Queries.get_user_id(str(username))
-=======
+    return Queries.get_user_id_by_name(str(username))
+
 def load_user_from_data_base(username, password):
     return Queries.get_user_id(str(username), str(password))
->>>>>>> 986ca718fa2539773d8680f27e374c7ae2d0f027
 
 
 def end(username, answers_list, game_dict, game_type):
@@ -127,14 +119,7 @@ def generate_questions(user_name, game_type):
 
 
 def get_all_preferences():
-<<<<<<< HEAD
     return Queries.get_all_genres()
-=======
-   """return {
-        "a": ['a', 'b', 'c', 'd', 'e', 'f', 'g']
-    }"""""
-   return Queries.get_all_genres()
->>>>>>> 986ca718fa2539773d8680f27e374c7ae2d0f027
 
 
 def get_leaderboard():
@@ -251,4 +236,4 @@ MOCK_CHALLENGING_DICT = GameInfoDict = {
         }
     }
 
-MOCK_GAME_SCORE = 1200g
+MOCK_GAME_SCORE = 1200
