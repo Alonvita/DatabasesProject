@@ -1,6 +1,8 @@
 import mysql.connector
 from sqlite3 import OperationalError
 
+from View.crash import crash_window
+
 mydb = None
 mycursor = None
 settings_info = None
@@ -101,6 +103,7 @@ connect to server
         set_user_config(settings["database"], settings["user_name"])
         execute_scripts_from_file("../build_tables.sql")
     except mysql.connector.Error as err:
+        crash_window()
         print("Something went wrong: {}".format(err))
 
 
@@ -192,7 +195,7 @@ def get_user_id_by_name(user_name):
     :param password:
     :return:     if uer name od password are taken, return -1 else-return user id
     """
-    cmd = "SELECT user_id FROM " + settings_info["database"] + ".users WHERE username = '"+user_name+"';"
+    cmd = "SELECT user_id FROM " + settings_info["database"] + ".users WHERE username = '"+user_name.get()+"';"
     info = get_info_by_command(cmd)
     if len(info) == 0:
         return -1
@@ -303,7 +306,9 @@ def get_all_genres():
     if len(info) == 0:
         return -1
     genres = [genre[0] for genre in info]
-    return genres
+    pre_dict= {}
+    pre_dict["Genre"] = genres
+    return pre_dict
 
 """artist data"""
 

@@ -15,19 +15,19 @@ def game_menu_window(window, Gamer_name):
     name = Label(frame, text='The memory game of a funny name', fg='black', font='Ariel 16 bold')
     name.grid(row=0, column=0, pady=(10, 10))
 
-    bottonEasy = Button(frame, text='Easy Game', bg="blue", fg="white", font='Ariel 12 bold',
+    bottonEasy = Button(frame, text='Easy Game', bg="blue", width= 20, fg="white", font='Ariel 12 bold',
                         command=lambda: easy(window, Gamer_name))
     bottonEasy.grid(row=1, column=0, pady=(10, 5))
 
-    bottonHard = Button(frame, text='Hard Game', bg="blue", fg="white", font='Ariel 12 bold',
+    bottonHard = Button(frame, text='Hard Game', bg="blue", width= 20, fg="white", font='Ariel 12 bold',
                         command=lambda: hard(window, Gamer_name))
     bottonHard.grid(row=2, column=0, pady=(10, 5))
 
-    bottonChallenging = Button(frame, text='Challenging Game', bg="blue", fg="white", font='Ariel 12 bold',
+    bottonChallenging = Button(frame, text='Challenging Game', width= 20, bg="blue", fg="white", font='Ariel 12 bold',
                         command=lambda: challenging(window, Gamer_name))
     bottonChallenging.grid(row=3, column=0, pady=(10, 5))
 
-    bottonEasy = Button(frame, text='Go back', bg="green", fg="white", font='Ariel 12 bold',
+    bottonEasy = Button(frame, text='Go back', bg="green", width= 20, fg="white", font='Ariel 12 bold',
                         command=lambda: start(window, Gamer_name))
     bottonEasy.grid(row=4, column=0, pady=(5, 5))
 

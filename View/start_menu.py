@@ -14,11 +14,11 @@ def start_menu_window(window, Gamer_name):
     name = Label(frame, text='The memory game of a funny name', fg='black', font='Ariel 16 bold')
     name.grid(row=0, column=0, pady=(10, 10))
 
-    bottonEasy = Button(frame, text='Start Game', bg="blue", fg="white", font='Ariel 12 bold',
+    bottonEasy = Button(frame, text='Start Game', bg="blue", width= 20, fg="white", font='Ariel 12 bold',
                         command=lambda: start(window, Gamer_name))
     bottonEasy.grid(row=1, column=0, pady=(10, 5))
 
-    bottonHard = Button(frame, text='Leaderboard', bg="blue", fg="white", font='Ariel 12 bold',
+    bottonHard = Button(frame, text='Leaderboard', bg="blue", width= 20, fg="white", font='Ariel 12 bold',
                         command=lambda: leaderboard(window, Gamer_name))
     bottonHard.grid(row=2, column=0, pady=(10, 5))
 

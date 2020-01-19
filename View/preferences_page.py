@@ -1,9 +1,41 @@
+import threading
 from tkinter import *
+from tkinter.ttk import Progressbar
+
 from View import start_menu
 import Logic.GameLogic as gL
 
+preferences_dict = ""
+
+
+def bar(progress, frame):
+    global preferences_dict
+    import time
+    i = 0
+    flag = 0
+    while True:
+        if preferences_dict == "":
+            progress['value'] = i
+            if i < 100 and flag == 0:
+                i += 20
+            else:
+                flag = 1
+                i -= 20
+            if i == 0:
+                flag = 0
+            frame.update()
+            time.sleep(1)
+        else:
+            break
+
+
+def getpre():
+    global preferences_dict
+    preferences_dict = gL.get_all_preferences()
+
 
 def preference_window(window, name):
+    global preferences_dict
     for widget in window.winfo_children():
         widget.destroy()
     frame = Frame(window)
@@ -12,11 +44,22 @@ def preference_window(window, name):
     frame.grid_columnconfigure(0, weight=1)
     frame.grid_rowconfigure(0, weight=1)
 
+    # get from alon the preference dictionary
+    t = threading.Thread(target=getpre)
+    t.start()
+
+    message1 = Label(frame, text='Please Wait...', fg='black', font='Ariel 16 bold')
+    message1.grid(row=0, column=0, pady=(5, 5))
+    progress = Progressbar(frame, orient=HORIZONTAL, length=100, mode='indeterminate')
+    progress.grid(row=1, column=0, pady=(5, 5))
+    bar(progress, frame)
+
+    listt = frame.grid_slaves()
+    for l in listt:
+        l.destroy()
+
     label = Label(frame, text='Preference manu', fg='black', font='Ariel 16 bold')
     label.grid(row=0, columnspan=7, pady=(10, 10))
-
-    # get from alon the preference dictionary
-    preferences_dict = gL.get_all_preferences()
 
     choice_dic = {}
     for preference in list(preferences_dict.keys()):
@@ -37,7 +80,7 @@ def preference_window(window, name):
             b = Checkbutton(frame, text=text,
                             variable=choice_dic[preference][i], offvalue="L")
             b.grid(row=rowindex, column=colindex, pady=(10, 10))
-            if colindex < 7:
+            if colindex < 6:
                 colindex += 1
             else:
                 colindex = 0
