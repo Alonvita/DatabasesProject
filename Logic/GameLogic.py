@@ -25,8 +25,7 @@ ADD_FAILURE = -1
 
 
 def login(username, password):
-    user_id = load_user_id_from_data_base(username)
-    user_id = load_user_from_data_base(username,password)
+    user_id = load_user_from_data_base(username, password)
 
     if user_id == USER_DOESNT_EXIST:
         return USER_DOESNT_EXIST
@@ -58,15 +57,16 @@ def register(user_name, password):
 
 
 def add_preferences_to_user(username, properties_dict):
-    user_id = load_user_id_from_data_base(username)
+    user_id = load_user_id_only_by_name(username)
     user_id =  Queries.get_user_id_by_name(username)
 
     print(properties_dict)
     Queries.add_preferences(user_id, properties_dict)
 
 
-def load_user_id_from_data_base(username):
+def load_user_id_only_by_name(username):
     return Queries.get_user_id_by_name(str(username))
+
 
 def load_user_from_data_base(username, password):
     return Queries.get_user_id(str(username), str(password))
@@ -101,7 +101,7 @@ def generate_questions(user_name, game_type):
 
     :return:
     """
-    user_id = Queries.get_user_id(user_name)
+    user_id = Queries.get_user_id_by_name(user_name)
 
     artists_list = Queries.get_preferred_artists(user_id)
     '''
