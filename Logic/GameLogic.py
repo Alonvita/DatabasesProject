@@ -1,7 +1,16 @@
+import random
 import Queries
 import Conventions
 
+TESTING = True
 DEBUGGING = True
+PLAYING_ARTIST_OFF_SET = 0
+NAME_OFF_SET = 0
+GENDER_OFF_SET = 1
+FROM_OFF_SET = 2
+BIRTH_DATE_OFF_SET = 3
+SONGS_LIST_OFF_SET = 4
+
 
 GAME_TYPES = [
     "EASY",
@@ -95,27 +104,103 @@ def end(username, answers_list, game_dict, game_type):
     #     )
 
 
-def generate_questions(user_name, game_type):
+def generate_questions(raw_artists_dict):
     """
     Will generate the questions based on the user artists preferences
 
     :return:
     """
-    user_id = Queries.get_user_id_by_name(user_name)
+    questions_map = {
+        "from": generate_origin_question,
+        "genre": generate_genre_question,
+        "birth_date": generate_birth_date_question,
+        "similar": generate_similar_artists_question
+    }
 
-    artists_list = Queries.get_preferred_artists(user_id)
-    '''
-    format:
-        [
-            ["artist_name", "gender", "from", "birth_date", [songs_list]] <- artist played on
-            ["artist_name", "gender", "from", "birth_date", [songs_list]] <- wrong answers
-            ...
-        ]
-    '''
+    # TODO:
+    #   1). randomly pick some questions from the right amount of questions
+    #   2). make a list with all the generated questions
+    #   3). send the questions in the agreed dict format
+
+    questions = [questions_map['from'](raw_artists_dict),
+                 questions_map['genre'](raw_artists_dict),
+                 questions_map['birth_date'](raw_artists_dict),
+                 questions_map['Similar'](raw_artists_dict)
+                 ]  # TODO: add the rest of the questions to here
+    random.shuffle(questions)  # shuffle
+
+    # return the questions dict
+    return {
+        "q1": questions[0],
+        "q2": questions[1],
+        "q3": questions[2],
+        "q4": questions[3],
+        "q5": questions[4]
+    }
 
 
+def generate_origin_question(raw_artists_dict):
+    question_text = "Where is the artist from?"  # text
+    answers = [artist[FROM_OFF_SET] for artist in raw_artists_dict['Artist']]  # list of all origins
+    right_answer = raw_artists_dict['Artist'][PLAYING_ARTIST_OFF_SET][FROM_OFF_SET]  # the origin of the playing artist
 
-    pass
+    return build_question_dict(question_text, answers, right_answer)
+
+
+def generate_birth_date_question(raw_artists_dict):
+    question_text = "What is the artist's birth date?"
+    answers = [raw_artists_dict[BIRTH_DATE_OFF_SET] for artist in raw_artists_dict['Artist']]
+    right_answer = answers[0]
+
+    return build_question_dict(question_text, answers, right_answer)
+
+
+def generate_genre_question(raw_artists_dict):
+    # create the list of genres by order of artists
+    list_of_genres = [Queries.get_genre_by_artist(artist_name) for artist_name in raw_artists_dict['Artist'][NAME_OFF_SET]]
+    genres_list_sizes = [len(lst) for lst in list_of_genres]
+
+    genres_for_question = list()
+
+    # randomly pick a genre from the list of genres per artist
+    for genres_list in list_of_genres:
+        genres_for_question.append(genres_list[random.randint(0, len(genres_list - 1))])
+
+    question_text = "What is the artist's genre?"
+    right_answer = genres_for_question[0]
+
+    return build_question_dict(question_text, genres_for_question, right_answer)
+
+
+def generate_similar_artists_question(raw_artists_dict):
+    # artist name
+    artist_name = raw_artists_dict['Artist'][NAME_OFF_SET]
+
+    question_text = "Who is the most similar artist to this artist?"
+
+    # generate genres from db
+    genres_of_the_artist = Queries.get_genre_by_artist(artist_name)
+
+    # generate similar artist by randomly picking a genre of similarity
+    similar_artist = \
+        Queries.get_similar_artists(
+            artist_name,
+            genres_of_the_artist[random.randint(0, len(genres_of_the_artist) - 1)]
+        )
+
+    answers = [artist_name for artist_name in raw_artists_dict['Artist'][NAME_OFF_SET]]
+    answers = answers[1:]  # remove the name of the artist we are playing on
+    answers.append(similar_artist)  # append the name of the similar artist
+
+    return build_question_dict(question_text, answers, similar_artist)
+
+
+def build_question_dict(text, answers, right_answer):
+    return {
+        "text": text,
+        "answers": answers,
+        "true": right_answer
+    }
 
 
 def get_all_preferences():
@@ -163,12 +248,70 @@ def start(username, game_type):
     return generate_challenging_game(username, game_type)
 
 
-def generate_challenging_game(username, game_type):
-    return MOCK_CHALLENGING_DICT
+def generate_challenging_game(user_name, game_type):
+    user_id = Queries.get_user_id_by_name(user_name)  # generate user ID
+
+    raw_artists_dict = Queries.get_preferred_artists(user_id)  # generate raw artists dict
+
+    # generate artists list
+    artists_list = [artist[NAME_OFF_SET] for artist in raw_artists_dict['Artist']]
+
+    # generate the properties list
+    properties_list_for_each_artist = list()
+
+    for artist in raw_artists_dict['Artist']:
+        # create a list per artist
+        list_for_artist = list()
+
+        # append relevant information
+        list_for_artist.append(artist[PLAYING_ARTIST_OFF_SET][FROM_OFF_SET])  # from
+        list_for_artist.append(artist[PLAYING_ARTIST_OFF_SET][BIRTH_DATE_OFF_SET])  # birth date
+
+        for song in artist[SONGS_LIST_OFF_SET]:
+            list_for_artist.append(song)  # append all songs
+
+        properties_list_for_each_artist.append(list_for_artist)
+
+    if not TESTING:
+        return {
+            "artist name": artists_list,
+            "properties": properties_list_for_each_artist,
+            "questions": generate_questions(raw_artists_dict)
+        }
+    else:
+        return MOCK_CHALLENGING_DICT
 
 
-def generate_easy_or_hard_games(username, game_type):
-    return MOCK_DICT
+def generate_easy_or_hard_games(user_name, game_type):
+    user_id = Queries.get_user_id_by_name(user_name)  # generate user ID
+
+    raw_artists_dict = Queries.get_preferred_artists(user_id)  # generate raw artists dict
+    '''
+    format:
+        { 'Artist':
+            ["artist_name", "gender", "from", "birth_date", [songs_list]] <- artist played on
+            ["artist_name", "gender", "from", "birth_date", [songs_list]] <- wrong answers
+            ...
+        }
+    '''
+
+    # generate the properties list
+    properties = list()
+    properties.append(raw_artists_dict['Artist'][PLAYING_ARTIST_OFF_SET][FROM_OFF_SET])  # from
+    properties.append(raw_artists_dict['Artist'][PLAYING_ARTIST_OFF_SET][BIRTH_DATE_OFF_SET])  # birth date
+
+    # append all songs
+    for song in raw_artists_dict['Artist'][SONGS_LIST_OFF_SET]:
+        properties.append(song)
+
+    if not TESTING:
+        return {
+            "artist name": raw_artists_dict['Artist'][PLAYING_ARTIST_OFF_SET][NAME_OFF_SET],
+            "properties": properties,
+            "questions": generate_questions(raw_artists_dict)
+        }
+    else:
+        return MOCK_DICT
 
 
 MOCK_DICT = {
