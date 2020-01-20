@@ -3,7 +3,7 @@ import Queries
 import Conventions
 
 TESTING_VIEW = False
-DEBUGGING = True
+DEBUGGING = False
 PLAYING_ARTIST_OFF_SET = 0
 
 DEBUGGING_GAME_END = True
@@ -73,7 +73,6 @@ def register(user_name, password):
 
 def add_preferences_to_user(username, properties_dict):
     user_id = load_user_id_only_by_name(username)
-    user_id = Queries.get_user_id_by_name(username)
 
     print(properties_dict)
     Queries.add_preferences(user_id, properties_dict)
@@ -87,7 +86,7 @@ def load_user_from_data_base(username, password):
     return Queries.get_user_id(str(username), str(password))
 
 
-def calculate_final_score(answers_list, game_dict):
+def calculate_final_score(answers_list, game_dict, game_type):
     final_score = 0
     q_index = 0
 
@@ -101,9 +100,9 @@ def calculate_final_score(answers_list, game_dict):
                                                                 answers_list[q_index]))
 
         if question['true'] == answers_list[q_index]:
-            final_score += 50
+            final_score += POINTS_TO_ADD[game_type]
             if DEBUGGING_GAME_END:
-                print("Adding 50 points on right answer: {}".format(answers_list[q_index]))
+                print("Adding {} points on right answer: {}".format(POINTS_TO_ADD[game_type], answers_list[q_index]))
 
         q_index += 1
 
@@ -112,13 +111,13 @@ def calculate_final_score(answers_list, game_dict):
 
 def end(username, answers_list, game_dict, game_type):
     if DEBUGGING_GAME_END:
-        print("Game ended with the following stats:\n\tusername: {}\n\tanswers_list{}\n\t".format(username, answers_list))
+        print("Game ended with the following stats:\n\tusername: {}\n\tanswers_list{}\n\tgame_type: {}".format(username, answers_list, game_type))
 
-    final_score = calculate_final_score(answers_list, game_dict)
+    final_score = calculate_final_score(answers_list, game_dict, GAME_TYPES_CODE_FROM_VIEW_TO_STRING[game_type])
 
     if not TESTING_VIEW:
         # get user ID
-        user_id = Queries.get_user_id_by_name(username)
+        user_id = load_user_id_only_by_name(username)
 
         # save the game
         Queries.add_game(game_type, final_score, user_id)
@@ -148,7 +147,7 @@ def end(username, answers_list, game_dict, game_type):
     #     )
 
 
-def generate_questions(raw_artists_dict):
+def generate_questions(raw_artists_dict, game_type):
     """
     Will generate the questions based on the user artists preferences
 
@@ -158,7 +157,8 @@ def generate_questions(raw_artists_dict):
         "from": generate_origin_question,
         "genre": generate_genre_question,
         "birth_date": generate_birth_date_question,
-        "similar": generate_similar_artists_question
+        "similar": generate_similar_artists_question,
+        "name": generate_name_question
     }
 
     questions = [questions_map['from'](raw_artists_dict),
@@ -168,10 +168,23 @@ def generate_questions(raw_artists_dict):
                  ]  # TODO: add the rest of the questions to here
     random.shuffle(questions)  # shuffle
 
+    # add the artist name question as first question for a hard game
+    if game_type == Conventions.HARD_GAME_CODE:
+        questions.insert(0, questions_map['name'](raw_artists_dict))
+
     build_questions_dict_for_view(questions)
 
     # build and return the questions dict
     return build_questions_dict_for_view(questions)
+
+
+def generate_name_question(raw_artists_dict):
+    question_text = "What is the artist that you are playing on?"
+    answers = [artist[NAME_OFF_SET] for artist in raw_artists_dict['Artist']]  # append all artists names
+    right_answer = raw_artists_dict['Artist'][PLAYING_ARTIST_OFF_SET][NAME_OFF_SET]
+
+    return build_question_dict(question_text, answers, right_answer)
+
 
 
 def build_questions_dict_for_view(questions_list):
@@ -384,7 +397,7 @@ def start(username, game_type):
 
 
 def generate_challenging_game(user_name, game_type):
-    user_id = Queries.get_user_id_by_name(user_name)  # generate user ID
+    user_id = load_user_id_only_by_name(user_name)  # generate user ID
 
     raw_artists_dict = Queries.get_preferred_artists(user_id, game_type)  # generate raw artists dict
 
@@ -411,14 +424,14 @@ def generate_challenging_game(user_name, game_type):
         return {
             "artist_name": artists_list,
             "properties": properties_list_for_each_artist,
-            "questions": generate_questions(raw_artists_dict)
+            "questions": generate_questions(raw_artists_dict, game_type)
         }
     else:
         return MOCK_CHALLENGING_DICT
 
 
 def generate_easy_or_hard_games(user_name, game_type):
-    user_id = Queries.get_user_id_by_name(user_name)  # generate user ID
+    user_id = load_user_id_only_by_name(user_name)  # generate user ID
 
     raw_artists_dict = Queries.get_preferred_artists(user_id, game_type)  # generate raw artists dict
     print(raw_artists_dict)
@@ -444,7 +457,7 @@ def generate_easy_or_hard_games(user_name, game_type):
         return {
             "artist_name": raw_artists_dict['Artist'][PLAYING_ARTIST_OFF_SET][NAME_OFF_SET],
             "properties": properties,
-            "questions": generate_questions(raw_artists_dict)
+            "questions": generate_questions(raw_artists_dict, game_type)
         }
     else:
         return MOCK_DICT
@@ -540,3 +553,15 @@ LIST_OF_ORIGINS = [
         "Benin",
         "Bangladesh"
     ]
+
+POINTS_TO_ADD = {
+    Conventions.EASY_GAME_CODE: 50,
+    Conventions.HARD_GAME_CODE: 70,
+    Conventions.CHALLENGING_GAME_CODE: 50
+}
+
+GAME_TYPES_CODE_FROM_VIEW_TO_STRING = {
+    1: Conventions.EASY_GAME_CODE,
+    2: Conventions.HARD_GAME_CODE,
+    3: Conventions.CHALLENGING_GAME_CODE
+}
