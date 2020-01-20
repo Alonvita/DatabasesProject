@@ -7,6 +7,7 @@ from View.crash import crash_window
 mydb = None
 mycursor = None
 settings_info = None
+DEBUGGING = True
 
 
 def gat_configurations_from_file(file_name):
@@ -22,6 +23,7 @@ def gat_configurations_from_file(file_name):
         info, value = line.split(":")
         settings_info[info] = value.replace("\n","")
     return settings_info
+
 
 def insert_data():
     """
@@ -52,19 +54,20 @@ def insert_data():
     if is_empty[0][0] == "yes":
         cmd =\
             """
-LOAD DATA LOCAL INFILE '../DB_FUNNY_NAME/ARTIST_TO_CREDIT.csv'   INTO TABLE artist_to_credit FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS;
-LOAD DATA LOCAL INFILE '../DB_FUNNY_NAME/ARTISTS.csv'  INTO TABLE artist FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS;
-LOAD DATA LOCAL INFILE '../DB_FUNNY_NAME/ARTISTS_GENRE.csv'  INTO TABLE artist_genres FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS;
-LOAD DATA LOCAL INFILE '../DB_FUNNY_NAME/GENRES.csv'  INTO TABLE genres FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS;
-LOAD DATA LOCAL INFILE '../DB_FUNNY_NAME/ALBUMS.csv'  INTO TABLE albums FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS;
-LOAD DATA LOCAL INFILE '../DB_FUNNY_NAME/ALBUMS_GENRE.csv'  INTO TABLE albums_genres FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS;
-LOAD DATA LOCAL INFILE '../DB_FUNNY_NAME/SONGS.csv'  INTO TABLE songs FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS;
-LOAD DATA LOCAL INFILE '../DB_FUNNY_NAME/CD_DATA.csv' INTO TABLE mediums FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS;
-"""
+                LOAD DATA LOCAL INFILE '../DB_FUNNY_NAME/ARTIST_TO_CREDIT.csv'   INTO TABLE artist_to_credit FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS;
+                LOAD DATA LOCAL INFILE '../DB_FUNNY_NAME/ARTISTS.csv'  INTO TABLE artist FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS;
+                LOAD DATA LOCAL INFILE '../DB_FUNNY_NAME/ARTISTS_GENRE.csv'  INTO TABLE artist_genres FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS;
+                LOAD DATA LOCAL INFILE '../DB_FUNNY_NAME/GENRES.csv'  INTO TABLE genres FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS;
+                LOAD DATA LOCAL INFILE '../DB_FUNNY_NAME/ALBUMS.csv'  INTO TABLE albums FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS;
+                LOAD DATA LOCAL INFILE '../DB_FUNNY_NAME/ALBUMS_GENRE.csv'  INTO TABLE albums_genres FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS;
+                LOAD DATA LOCAL INFILE '../DB_FUNNY_NAME/SONGS.csv'  INTO TABLE songs FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS;
+                LOAD DATA LOCAL INFILE '../DB_FUNNY_NAME/CD_DATA.csv' INTO TABLE mediums FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS;
+            """
         commands = cmd.split(";")
         #insert each csv data file into tables
         for command in commands:
             set_info_by_command(command)
+
 
 def set_user_config(db_name, user_name):
     """
@@ -79,7 +82,6 @@ def set_user_config(db_name, user_name):
         mycursor.execute(cmd)
         cmd = "USE " + db_name + ";"
         mycursor.execute(cmd)
-        insert_data()
     except mysql.connector.Error as err:
         print("set_user_config:Command skipped: " + err.msg)
 
@@ -103,6 +105,7 @@ connect to server
         # set username and database config
         set_user_config(settings["database"], settings["user_name"])
         execute_scripts_from_file("../build_tables.sql")
+        insert_data();
     except mysql.connector.Error as err:
         crash_window()
         print("Something went wrong: {}".format(err))
@@ -161,7 +164,6 @@ def set_info_by_command(command_string):
     print(command_string)
 
 
-
 def try_command():
     cmd = """SELECT songs.name 
     FROM artist 
@@ -174,6 +176,7 @@ def try_command():
 
 
 """user data"""
+
 
 def get_user_id(user_name, password):
     """
@@ -188,6 +191,7 @@ def get_user_id(user_name, password):
         return -1
     return info[0][0]
 
+
 def get_user_id_by_name(user_name):
     """
     check if user exist by user name only.
@@ -196,11 +200,14 @@ def get_user_id_by_name(user_name):
     :param password:
     :return:     if uer name od password are taken, return -1 else-return user id
     """
-    cmd = "SELECT user_id FROM " + settings_info["database"] + ".users WHERE username = '"+user_name.get()+"';"
+    cmd = "SELECT user_id FROM " + settings_info["database"] + ".users WHERE username = '" + user_name + "';"
     info = get_info_by_command(cmd)
+
     if len(info) == 0:
         return -1
+
     return info[0][0]
+
 
 def get_preferred_genres(user_id):
     """
@@ -228,6 +235,7 @@ def get_similar_artist(artist_name):
         artists.extend([artist_name for artist_name in get_info_by_command(cmd)])
     return artists
 
+
 def had_genre_preferred(user_id):
     """
         if there is  users genres
@@ -241,15 +249,16 @@ def had_genre_preferred(user_id):
         return False
     return True
 
+
 def add_preferences(user_id, genres_list):  # todo: change only to genre
     """
     Add prefered ganres of user
     :param user_id:
     :param genres_list:
-    :return:
+    :return
     """
     if len(genres_list) != 0:
-        for pref in genres_list:
+        for pref in genres_list["Genre"]:
             insert_pref = """INSERT INTO """ + settings_info["database"] + """.users_preferences(user_id,type,preference) VALUES(""" + str(
                 user_id) + ",'" + "genre" + "','" + pref + "');"
             set_info_by_command(insert_pref)
@@ -257,9 +266,9 @@ def add_preferences(user_id, genres_list):  # todo: change only to genre
                         SELECT distinct """ + str(user_id) + """, "artist",artist.name ,0
                         FROM artist JOIN artist_genres ON artist.id = artist_genres.artist_id
                         WHERE artist_genres.genre = '""" + pref + """'
-                        AND artist.name NOT IN (SELECT preference  FROM """ + settings_info["database"] + """".users_preferences WHERE user_id = """\
-                        + str(user_id) + """)
-                        ORDER BY RAND()
+                        AND artist.name NOT IN (SELECT preference  FROM """ + settings_info["database"] + """.users_preferences WHERE user_id = """\
+                        + str(user_id) + """
+                        ORDER BY RAND())
                         LIMIT 4;
                         """
             set_info_by_command(insert_artist_by_genre)
@@ -316,15 +325,21 @@ def get_all_genres():
          artist_genres on artist_genres.genre = genres.name GROUP BY name ORDER BY sum DESC limit 50) AS aa;
          """
     info = get_info_by_command(cmd)
+
     if len(info) == 0:
-        print("oops")
+        print("Error: info length returned 0 at get_all_genres.\n\t{}".format(info))
         return -1
+
     genres = [genre[0] for genre in info]
+
     pre_dict= {}
     pre_dict["Genre"] = genres
+
     return pre_dict
 
-"""artist data"""
+
+# -------- artist data -------
+
 
 def get_artist_info(artist_name):
     """
@@ -333,10 +348,15 @@ def get_artist_info(artist_name):
     :return:# returns list of artist info: ['artist1_name', 'artist1_gender', 'origin_country', 'day/month/year']
     """
     command = "SELECT DISTINCT * FROM artist WHERE artist.name = " + "'" + artist_name + "';"
-    print(command)
-    print(get_info_by_command(command))
+
+    if DEBUGGING:
+        print(command)
+        print(get_info_by_command(command))
+
     artist_info = list(get_info_by_command(command)[0])
-    print(artist_info)
+
+    if DEBUGGING:
+        print(artist_info)
     birth_date = str(artist_info[7])+"/"+str(artist_info[6])+"/"+str(artist_info[5])
     artist_data = list([artist_info[i] for i in range(1, 4)])
     artist_data.append(birth_date)
@@ -374,7 +394,7 @@ def get_songs(artist_name):
     get 3 songs of artist
     :param artist_name:
     :return:# returns list of songs: ['song1', 'song2',...]
- -1 if no songs, else return the list
+                -1 if no songs, else return the list
     """
     command = """SELECT songs.name FROM artist JOIN artist_to_credit ON artist_to_credit.artist = artist.id 
     JOIN songs ON songs.artist_credit = artist_to_credit.artist 
@@ -416,6 +436,7 @@ def get_prefered_artist_hard(user_id):
                 limit 4;
                 """
     return cmd
+
 
 def get_prefered_artist_challenging(user_id):
     cmd = """SELECT * FROM (SELECT preference FROM """ + settings_info["database"] + """.users_preferences 
@@ -483,7 +504,7 @@ def get_preferred_artists(user_id, game_type):
 
 """
 
-"""Ratings"""
+# -------- RATINGS --------
 
 
 def update_counter(user_name, artists_played):  # TODO: artist is a list - each entry has a name
@@ -523,7 +544,6 @@ def add_game(typ, score, user_id):
     set_info_by_command(cmd)
 
 
-
 def get_top_players(game_type):
     """
     return list of top players by type of the game
@@ -544,8 +564,6 @@ def get_top_players(game_type):
         return -1
     top = [[p[0], p[1]] for p in info]
     return top
-
-
 
 
 """

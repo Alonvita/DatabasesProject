@@ -124,18 +124,51 @@ def generate_questions(raw_artists_dict):
                  ]  # TODO: add the rest of the questions to here
     random.shuffle(questions)  # shuffle
 
-    # return the questions dict
-    return {
-        "q1": questions[0],
-        "q2": questions[1],
-        "q3": questions[2],
-        "q4": questions[3]  # , "q5": questions[4]
-    }
+    build_questions_dict_for_view(questions)
+
+    # build and return the questions dict
+    return build_questions_dict_for_view(questions)
+
+
+def build_questions_dict_for_view(questions_list):
+    """
+    builds the questions dict from the questions list. Inserts question_name: question per not None value.
+
+    :param questions_list:
+    :return:
+    """
+    questions_dict = dict()
+
+    for question in questions_list:
+        # index of the question
+        index = 1
+
+        # insert question if it is not None
+        if question:
+            question_name = "q" + str(index)
+
+            questions_dict[question_name] = question
+            # increase index, as question was inserted to dict
+            index += 1
+
+    return questions_dict
+
+
+def none_values_exist_in_answer_list(answers_list):
+    for answer in answers_list:
+        if answer is None:
+            return True
+
+    return False
 
 
 def generate_origin_question(raw_artists_dict):
     question_text = "Where is the artist from?"  # text
     answers = [artist[FROM_OFF_SET] for artist in raw_artists_dict['Artist']]  # list of all origins
+
+    if none_values_exist_in_answer_list(answers):
+        return None
+
     right_answer = raw_artists_dict['Artist'][PLAYING_ARTIST_OFF_SET][FROM_OFF_SET]  # the origin of the playing artist
 
     return build_question_dict(question_text, answers, right_answer)
@@ -143,7 +176,11 @@ def generate_origin_question(raw_artists_dict):
 
 def generate_birth_date_question(raw_artists_dict):
     question_text = "What is the artist's birth date?"
-    answers = [raw_artists_dict[BIRTH_DATE_OFF_SET] for artist in raw_artists_dict['Artist']]
+    answers = [artist[BIRTH_DATE_OFF_SET] for artist in raw_artists_dict['Artist']]
+
+    if none_values_exist_in_answer_list(answers):
+        return None
+
     right_answer = answers[0]
 
     return build_question_dict(question_text, answers, right_answer)
@@ -159,6 +196,10 @@ def generate_genre_question(raw_artists_dict):
     # randomly pick a genre from the list of genres per artist
     for genres_list in list_of_genres:
         genres_for_question.append(genres_list[random.randint(0, len(genres_list - 1))])
+
+    # check for None values
+    if none_values_exist_in_answer_list(genres_for_question):
+        return None
 
     question_text = "What is the artist's genre?"
     right_answer = genres_for_question[0]
@@ -176,17 +217,20 @@ def generate_similar_artists_question(raw_artists_dict):
     genres_of_the_artist = Queries.get_genre_by_artist(artist_name)
 
     # generate similar artist by randomly picking a genre of similarity
-    similar_artist = \
-        Queries.get_similar_artists(
-            artist_name,
-            genres_of_the_artist[random.randint(0, len(genres_of_the_artist) - 1)]
-        )
+    similar_artist_list = Queries.get_similar_artist(artist_name)
+
+    # randomply pick a similar artist from the similar_artits_list
+    similar_artist = similar_artist_list[random.randint(0, len(similar_artist_list) - 1)]
 
     answers = [artist_name for artist_name in raw_artists_dict['Artist'][NAME_OFF_SET]]
     answers = answers[1:]  # remove the name of the artist we are playing on
     answers.append(similar_artist)  # append the name of the similar artist
 
-    return build_question_dict(question_text, answers, similar_artist)
+    # check None values
+    if none_values_exist_in_answer_list(answers):
+        return None
+
+    return build_question_dict(question_text, answers, similar_artist_list)
 
 
 def build_question_dict(text, answers, right_answer):
