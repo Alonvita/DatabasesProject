@@ -117,11 +117,6 @@ def generate_questions(raw_artists_dict):
         "similar": generate_similar_artists_question
     }
 
-    # TODO:
-    #   1). randomly pick some questions from the right amount of questions
-    #   2). make a list with all the generated questions
-    #   3). send the questions in the agreed dict format
-
     questions = [questions_map['from'](raw_artists_dict),
                  questions_map['genre'](raw_artists_dict),
                  questions_map['birth_date'](raw_artists_dict),
