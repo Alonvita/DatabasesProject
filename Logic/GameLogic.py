@@ -15,6 +15,8 @@ FROM_OFF_SET = 2
 BIRTH_DATE_OFF_SET = 3
 SONGS_LIST_OFF_SET = 4
 
+NUMBER_OF_ORIGINS = 3
+
 
 GAME_TYPES = [
     "EASY",
@@ -218,9 +220,29 @@ def answers_list_empty_or_less_than_three_songs(answers_list):
         return None
 
 
+def generate_random_list_of_origins():
+    list_of_origins = LIST_OF_ORIGINS.copy()
+
+    origins_list_to_return = list()
+
+    for number_of_origins_to_add in range(NUMBER_OF_ORIGINS):
+        # get a random origin
+        rand_origin = random.choice(list_of_origins)
+
+        # add it to the list
+        origins_list_to_return.append(rand_origin)
+
+        # remove it from the list_of_origins
+        list_of_origins.remove(rand_origin)
+
+    return origins_list_to_return
+
+
 def generate_origin_question(raw_artists_dict):
     question_text = "Where is the artist from?"  # text
-    answers = [artist[FROM_OFF_SET] for artist in raw_artists_dict['Artist']]  # list of all origins
+    # generate a random list of origins and add the right answer
+    answers = generate_random_list_of_origins()
+    answers.append(raw_artists_dict['Artist'][PLAYING_ARTIST_OFF_SET][FROM_OFF_SET])
 
     if none_values_exist_in_answer_list(answers):
         return None
@@ -494,3 +516,27 @@ MOCK_CHALLENGING_DICT = GameInfoDict = {
     }
 
 MOCK_GAME_SCORE = 1200
+
+LIST_OF_ORIGINS = [
+        "Israel",
+        "Turkey",
+        "Gibraltar",
+        "Côte d'Ivoire",
+        "Bosnia and Herzegovina",
+        "Colombia",
+        "Bulgaria",
+        "Morocco",
+        "Poland",
+        "Russian Federation",
+        "Guinea",
+        "Marshall Islands",
+        "Brunei Darussala",
+        "Ireland",
+        "Albania",
+        "Finland",
+        "Sweden",
+        "Martinique",
+        "Lithuania",
+        "Benin",
+        "Bangladesh"
+    ]
