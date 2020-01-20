@@ -42,7 +42,7 @@ def validateRegister(window, frame, name, pword):
     print(name.get(), pword.get())
     validateR = gL.register(name.get(), pword.get())
     if validateR == 0:
-        label = Label(frame, text='Exist', fg='red', font='Ariel 8 bold')
+        label = Label(frame, text='User Exists!', fg='red', font='Ariel 8 bold')
         label.grid(row=5, columnspan=2, pady=(10, 10))
     else:
         preferences_page.preference_window(window, name)

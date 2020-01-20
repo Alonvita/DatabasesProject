@@ -33,7 +33,7 @@ def bar(progress, frame):
 
 def getGameInfoDict(Gamer_name):
     global GameInfoDict
-    GameInfoDict = gL.start(Gamer_name, Conventions.CHALLENGING_GAME_CODE)
+    GameInfoDict = gL.start(Gamer_name.get(), Conventions.CHALLENGING_GAME_CODE)
 
 
 def challenging_game_window(window, Gamer_name):
@@ -143,7 +143,7 @@ def showQuestion(Gamer_name, window, frame, GameInfoDict, numberOfQ, answers, ge
         right_answer.grid(row=5, column=0, pady=(10, 10))
     else:
         del answers[0]
-        grade = gL.end(Gamer_name, answers, GameInfoDict, 3)
+        grade = gL.end(Gamer_name.get(), answers, GameInfoDict, 3)
         list = frame.grid_slaves()
         for l in list:
             l.destroy()

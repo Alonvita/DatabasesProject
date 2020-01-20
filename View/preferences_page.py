@@ -36,6 +36,7 @@ def getpre():
 
 def preference_window(window, name):
     global preferences_dict
+
     for widget in window.winfo_children():
         widget.destroy()
     frame = Frame(window)
@@ -55,6 +56,7 @@ def preference_window(window, name):
     bar(progress, frame)
 
     listt = frame.grid_slaves()
+
     for l in listt:
         l.destroy()
 
@@ -71,6 +73,7 @@ def preference_window(window, name):
             i += 1
     rowindex = 1
     colindex = 0
+
     for preference in list(preferences_dict.keys()):
         pre_name = Label(frame, text='choose: ' + preference, fg='black', font='Ariel 16 bold')
         pre_name.grid(row=rowindex, columnspan=7, pady=(10, 10))
