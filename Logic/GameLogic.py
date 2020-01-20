@@ -134,8 +134,7 @@ def generate_questions(raw_artists_dict):
         "q1": questions[0],
         "q2": questions[1],
         "q3": questions[2],
-        "q4": questions[3],
-        "q5": questions[4]
+        "q4": questions[3]  # , "q5": questions[4]
     }
 
 
