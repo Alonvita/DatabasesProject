@@ -67,7 +67,7 @@ def register(user_name, password):
 
 def add_preferences_to_user(username, properties_dict):
     user_id = load_user_id_only_by_name(username)
-    user_id =  Queries.get_user_id_by_name(username)
+    user_id = Queries.get_user_id_by_name(username)
 
     print(properties_dict)
     Queries.add_preferences(user_id, properties_dict)
@@ -162,11 +162,19 @@ def none_values_exist_in_answer_list(answers_list):
     return False
 
 
+def answers_list_empty_or_less_than_three_songs(answers_list):
+    return answers_list == Conventions.EMPTY_ANSWERS_LIST_CODE or \
+           len(answers_list) != Conventions.VALID_SONGS_ANSWERS_LIST_SIZE
+
+
 def generate_origin_question(raw_artists_dict):
     question_text = "Where is the artist from?"  # text
     answers = [artist[FROM_OFF_SET] for artist in raw_artists_dict['Artist']]  # list of all origins
 
     if none_values_exist_in_answer_list(answers):
+        return None
+
+    if answers_list_empty_or_less_than_three_songs(answers):
         return None
 
     right_answer = raw_artists_dict['Artist'][PLAYING_ARTIST_OFF_SET][FROM_OFF_SET]  # the origin of the playing artist
@@ -179,6 +187,9 @@ def generate_birth_date_question(raw_artists_dict):
     answers = [artist[BIRTH_DATE_OFF_SET] for artist in raw_artists_dict['Artist']]
 
     if none_values_exist_in_answer_list(answers):
+        return None
+
+    if answers_list_empty_or_less_than_three_songs(answers):
         return None
 
     right_answer = answers[0]
@@ -199,6 +210,9 @@ def generate_genre_question(raw_artists_dict):
 
     # check for None values
     if none_values_exist_in_answer_list(genres_for_question):
+        return None
+
+    if answers_list_empty_or_less_than_three_songs(genres_for_question):
         return None
 
     question_text = "What is the artist's genre?"
@@ -228,6 +242,9 @@ def generate_similar_artists_question(raw_artists_dict):
 
     # check None values
     if none_values_exist_in_answer_list(answers):
+        return None
+
+    if answers_list_empty_or_less_than_three_songs(answers):
         return None
 
     return build_question_dict(question_text, answers, similar_artist_list)
@@ -289,7 +306,7 @@ def start(username, game_type):
 def generate_challenging_game(user_name, game_type):
     user_id = Queries.get_user_id_by_name(user_name)  # generate user ID
 
-    raw_artists_dict = Queries.get_preferred_artists(user_id)  # generate raw artists dict
+    raw_artists_dict = Queries.get_preferred_artists(user_id, game_type)  # generate raw artists dict
 
     # generate artists list
     artists_list = [artist[NAME_OFF_SET] for artist in raw_artists_dict['Artist']]

@@ -8,6 +8,7 @@ mydb = None
 mycursor = None
 settings_info = None
 DEBUGGING = True
+USE_MOCK_DB = True
 
 
 def gat_configurations_from_file(file_name):
@@ -183,12 +184,12 @@ def get_user_id(user_name, password):
     check if user exist by user name and password.
     :param user_name:
     :param password:
-    :return:  int   if uer name od password are taken, return -1 else-return user id-int
+    :return:  int   if uer name od password are taken, return Conventions.EMPTY_ANSWERS_LIST_CODE else-return user id-int
     """
     cmd = "SELECT user_id FROM " + settings_info["database"] + ".users WHERE username = '"+user_name+"' AND password = '"+password+"';"
     info = get_info_by_command(cmd)
     if len(info) == 0:
-        return -1
+        return Conventions.EMPTY_ANSWERS_LIST_CODE
     return info[0][0]
 
 
@@ -198,13 +199,13 @@ def get_user_id_by_name(user_name):
     to prevent two users with same name
     :param user_name:
     :param password:
-    :return:     if uer name od password are taken, return -1 else-return user id
+    :return:     if uer name od password are taken, return Conventions.EMPTY_ANSWERS_LIST_CODE else-return user id
     """
     cmd = "SELECT user_id FROM " + settings_info["database"] + ".users WHERE username = '" + user_name + "';"
     info = get_info_by_command(cmd)
 
     if len(info) == 0:
-        return -1
+        return Conventions.EMPTY_ANSWERS_LIST_CODE
 
     return info[0][0]
 
@@ -287,10 +288,10 @@ def add_user(user_name, password1):
     #check if user name taken
     user_id = get_user_id_by_name(user_name)
     if user_id is not -1:
-        return -1
+        return Conventions.EMPTY_ANSWERS_LIST_CODE
 
     if get_user_id(user_name,password_d) is not -1:
-        return -1
+        return Conventions.EMPTY_ANSWERS_LIST_CODE
 
     insert_user = """INSERT INTO users(username, password)
                     VALUES ( '""" + user_name+"', '" + password_d + "');"
@@ -305,12 +306,12 @@ def confirm_user(user_name, password):
     :param user_name:
     :param password:
     :return:# return int user_id or -1 if don't exist
-     if uer name od password are taken, return -1 else-return user id
+     if uer name od password are taken, return Conventions.EMPTY_ANSWERS_LIST_CODE else-return user id
     """
     cmd = "SELECT user_id FROM " + settings_info["database"] + ".users WHERE username = '"+user_name+"' AND password = "+password+";"
     info = get_info_by_command(cmd)
     if len(info) == 0:
-        return -1
+        return Conventions.EMPTY_ANSWERS_LIST_CODE
     return info[0][0]
 
 
@@ -328,7 +329,7 @@ def get_all_genres():
 
     if len(info) == 0:
         print("Error: info length returned 0 at get_all_genres.\n\t{}".format(info))
-        return -1
+        return Conventions.EMPTY_ANSWERS_LIST_CODE
 
     genres = [genre[0] for genre in info]
 
@@ -376,7 +377,7 @@ def get_genre_by_artist(artist_name):
         WHERE artist.name = '""" + artist_name + "' GROUP BY artist_genres.genre;"""
     info = get_info_by_command(command)
     if len(info)==0:
-        return -1
+        return Conventions.EMPTY_ANSWERS_LIST_CODE
     return [g[0] for g in info]
 
 
@@ -396,12 +397,15 @@ def get_songs(artist_name):
     :return:# returns list of songs: ['song1', 'song2',...]
                 -1 if no songs, else return the list
     """
+    if USE_MOCK_DB:
+        return MOCK_SONGS_LIST
+
     command = """SELECT songs.name FROM artist JOIN artist_to_credit ON artist_to_credit.artist = artist.id 
     JOIN songs ON songs.artist_credit = artist_to_credit.artist 
     WHERE artist.name = '""" + artist_name + """' GROUP BY songs.name limit 3;"""
     info = get_info_by_command(command)
     if len(info) is 0:
-        return -1
+        return Conventions.EMPTY_ANSWERS_LIST_CODE
     songs_list = [song[0] for song in info]
     print(songs_list[0])
     return songs_list
@@ -470,7 +474,7 @@ def get_preferred_artists(user_id, game_type):
     info = get_info_by_command(cmd)
 
     if len(info) == 0:
-        return -1
+        return Conventions.EMPTY_ANSWERS_LIST_CODE
 
     artists_names = [a[0] for a in info]
     artists_list = list()
@@ -481,7 +485,7 @@ def get_preferred_artists(user_id, game_type):
         artist_info.append(songs)
         artists_list.append(artist_info)
     preferred_artists = dict()
-    preferred_artists._setitem_("Artist", artists_list)
+    preferred_artists.__setitem__("Artist", artists_list)
 
     print("List created: {}".format(preferred_artists))
     return preferred_artists
@@ -492,7 +496,7 @@ def get_preferred_artists(user_id, game_type):
           "AND users_preferences.user_id = " + str(user_id) + " AND users_preferences.type = 'artist' limit 4;"
     info = get_info_by_command(cmd)
     if len(info) == 0:
-        return -1
+        return Conventions.EMPTY_ANSWERS_LIST_CODE
     artists_names = [a[0] for a in info]
     artists_list = list()
     for a_n in artists_names:
@@ -549,7 +553,7 @@ def get_top_players(game_type):
     return list of top players by type of the game
     :param game_type:
     :return:# return list of players: ['user1', 'user2']
-  if no players, return -1
+  if no players, return Conventions.EMPTY_ANSWERS_LIST_CODE
     """
     if game_type == Conventions.EASY_GAME_CODE:
         game_type = "first_game_points"
@@ -561,7 +565,7 @@ def get_top_players(game_type):
           " FROM " + settings_info["database"] +".users ORDER BY users." + game_type + " DESC limit 3;"
     info = get_info_by_command(cmd)
     if len(info) == 0:
-        return -1
+        return Conventions.EMPTY_ANSWERS_LIST_CODE
     top = [[p[0], p[1]] for p in info]
     return top
 
@@ -584,3 +588,5 @@ get artist_songs: (adele songs limit list to 3 - no duplicated song names)
 
 """
 
+MOCK_SONGS_LIST = ['test1', 'test2', 'test3']
+MOCK_SONGS_LIST_WITH_NONE_VALS = ['test1', 'test2', None]
