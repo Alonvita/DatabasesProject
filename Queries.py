@@ -5,7 +5,6 @@ import mysql.connector
 from sqlite3 import OperationalError
 
 from Server import Server
-from View.crash import crash_window
 
 mydb = None
 mycursor = None
@@ -22,11 +21,12 @@ def run():
 connect to server
     :return:
     """
+    status = None
+    message = None
     try:
         sql_server.connect()
         print("run:connected")
     except mysql.connector.Error as err:
-        crash_window()
         print("Something went wrong: {}".format(err))
 
 
@@ -105,14 +105,28 @@ def get_user_genres(user_id):
     return [genre[0] for genre in genres]
 
 
+
+
 def get_similar_artist(artist_name):
     genres = get_genre_by_artist(artist_name)
     artists = list()
+    tamp_cmd = """select * from (
+    SELECT name FROM """ + sql_server.settings_info["database"]+""".artist WHERE  artist.name != '"""+artist_name+""""' 
+    AND  artist.id IN 
+    (SELECT artist_id FROM  """ + sql_server.settings_info["database"]+""".artist_genres WHERE genre = '"""+\
+    genres[0]+"""') ORDER BY RAND() LIMIT 1) as t1
+    union
+    select * from(
+    SELECT name FROM  """ + sql_server.settings_info["database"]+""".artist WHERE  artist.id NOT IN 
+    (SELECT artist_id FROM  """ + sql_server.settings_info["database"]+""".artist_genres WHERE genre = '"""+genres[0]+\
+    """') ORDER BY RAND()  LIMIT 3) as t2;
+"""
+
     for g in genres:
-        cmd = "SELECT name FROM " + sql_server.settings_info["database"] + \
+        cmd = "SELECT name FROM " +  sql_server.settings_info["database"] + \
               ".artist WHERE id IN " \
-              "(SELECT artist_id FROM " + sql_server.settings_info["database"] + ".artist_genres WHERE genre = '"+g+"') LIMIT 5;"
-        artists.extend([artist_name[0] for artist_name in sql_server.get_info_by_command(cmd)])
+              "(SELECT artist_id FROM " +  sql_server.settings_info["database"] + ".artist_genres WHERE genre = '"+g+"');"
+        artists.extend([artist_name for artist_name in sql_server.get_info_by_command(cmd)])
     return artists
 
 
@@ -435,7 +449,7 @@ def add_game(typ, score, user_id):
     if typ == Conventions.EASY_GAME_CODE:
         typ = "first_game_points"
     elif typ == Conventions.HARD_GAME_CODE:
-        typ = "second_game_points"
+        typ = "second_game_point"
     else:
         typ = "third_game_points"
 
@@ -463,7 +477,7 @@ def get_top_players(game_type):
     else:
         game_type = "third_game_points"
     cmd = "SELECT username,"+ game_type +\
-          " FROM " + sql_server.settings_info["database"] +".users ORDER BY users." + game_type + " DESC limit 3;"
+          " FROM " + sql_server.settings_info["database"] +".users WHERE "+ game_type+" is not null ORDER BY users." + game_type + " DESC limit 3;"
     info = sql_server.get_info_by_command(cmd)
     if len(info) == 0:
         return Conventions.EMPTY_ANSWERS_LIST_CODE

@@ -2,6 +2,9 @@ import mysql.connector
 
 from sqlite3 import OperationalError
 
+import Conventions
+from View.crash import crash_window
+
 mydb = None
 mycursor = None
 settings_info = None
@@ -71,8 +74,9 @@ class Server:
             mycursor.execute(cmd)
         except mysql.connector.Error as err:
             print("set_user_config:Command skipped: " + err.msg)
-            return "Error while setting users PRIVILEGES:" + err.msg
-        return ""
+            crash_window("Cant set user configurations to database")
+            return "Error while setting users PRIVILEGES:" + err.msg, Conventions.CRASHING_MODE
+        return Conventions.WORKING_MODE
 
     def connect(self):
         """
@@ -91,8 +95,7 @@ class Server:
             self.set_user_config(settings_info["database"], settings_info["user_name"])
         except mysql.connector.Error as err:
             print("Something went wrong: {}".format(err))
-            return "Error: can't connect to DB " + err
-        return "Connected"
+            crash_window("Cant connect to database")
 
     def get_info_by_command(self, command_string):
         """
@@ -106,8 +109,7 @@ class Server:
             myresult = mycursor.fetchall()
         except mysql.connector.Error as err:
             print("get_info_by_command:Something went wrong: {}" + err.msg)
-            if err.msg == "Lost connection to MySQL server at 'localhost:3307'":
-                self.connect()
+            crash_window("Cant connect run commands on database")
         return myresult
 
     def set_info_by_command(self, command_string):
@@ -121,6 +123,5 @@ class Server:
             mydb.commit()
         except mysql.connector.Error as err:
             print("set_info_by_command:Something went wrong: {}" + err.msg)
-            if err.msg == "Lost connection to MySQL server at 'localhost:3307'":
-                self.connect()
+            crash_window("Cant connect update data on database")
         print(command_string)

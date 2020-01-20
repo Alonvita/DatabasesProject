@@ -54,7 +54,6 @@ def run():
 
 
 def getQueries():
-    print("ss")
     global serverRun
     Queries.run()
     serverRun = 1

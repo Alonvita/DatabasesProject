@@ -1,6 +1,8 @@
 import random
 import Queries
 import Conventions
+from View.crash import crash_window
+
 
 TESTING_VIEW = False
 DEBUGGING = False
@@ -120,7 +122,7 @@ def end(username, answers_list, game_dict, game_type):
         user_id = load_user_id_only_by_name(username)
 
         # save the game
-        Queries.add_game(game_type, final_score, user_id)
+        Queries.add_game(GAME_TYPES_CODE_FROM_VIEW_TO_STRING[game_type], final_score, user_id)
 
         # return final score
         return final_score
@@ -363,9 +365,9 @@ def get_leaderboard():
         leaderboard[game_type].append(['Player name', 'Score'])
 
         top_players = Queries.get_top_players(game_type)
-
-        for data_list in top_players:
-            leaderboard[game_type].append(data_list)
+        if top_players != Conventions.EMPTY_ANSWERS_LIST_CODE:
+            for data_list in top_players:
+                leaderboard[game_type].append(data_list)
 
     return leaderboard
 
@@ -394,6 +396,7 @@ def start(username, game_type):
         return generate_easy_or_hard_games(username, game_type)
 
     return generate_challenging_game(username, game_type)
+
 
 
 def generate_challenging_game(user_name, game_type):
