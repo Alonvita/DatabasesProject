@@ -1,3 +1,4 @@
+import Conventions
 import mysql.connector
 from sqlite3 import OperationalError
 
@@ -215,6 +216,18 @@ def get_preferred_genres(user_id):
          return False
     return True
 
+
+def get_similar_artist(artist_name):
+
+    genres = get_genre_by_artist(artist_name)
+    artists = list()
+    for g in genres:
+        cmd = "SELECT name FROM " + settings_info["database"] + \
+              ".artist WHERE id IN " \
+              "(SELECT artist_id FROM " + settings_info["database"] + ".artist_genres WHERE genre = '"+g+"');"
+        artists.extend([artist_name for artist_name in get_info_by_command(cmd)])
+    return artists
+
 def had_genre_preferred(user_id):
     """
         if there is  users genres
@@ -304,6 +317,7 @@ def get_all_genres():
          """
     info = get_info_by_command(cmd)
     if len(info) == 0:
+        print("oops")
         return -1
     genres = [genre[0] for genre in info]
     pre_dict= {}
@@ -318,8 +332,11 @@ def get_artist_info(artist_name):
     :param artist_name:
     :return:# returns list of artist info: ['artist1_name', 'artist1_gender', 'origin_country', 'day/month/year']
     """
-    command = "SELECT * FROM artist WHERE artist.name = " + "'" + artist_name + "';"
-    artist_info = list(get_info_by_command(command)._getitem_(0))
+    command = "SELECT DISTINCT * FROM artist WHERE artist.name = " + "'" + artist_name + "';"
+    print(command)
+    print(get_info_by_command(command))
+    artist_info = list(get_info_by_command(command)[0])
+    print(artist_info)
     birth_date = str(artist_info[7])+"/"+str(artist_info[6])+"/"+str(artist_info[5])
     artist_data = list([artist_info[i] for i in range(1, 4)])
     artist_data.append(birth_date)
@@ -370,33 +387,85 @@ def get_songs(artist_name):
     return songs_list
 
 
-def get_preferred_artists(user_id):
+def get_prefered_artist_easy(user_id):
+    """
+    Get 1 artist which
+    :return:
+    """
+    cmd = """SELECT * FROM (SELECT preference FROM """ + settings_info["database"] + """.users_preferences WHERE 
+            count = 0 AND user_id = """ + str(user_id) + """ AND type = 'artist' ORDER BY RAND() ASC limit 1) as t1
+            UNION  
+            SELECT* FROM( SELECT preference FROM """ + settings_info["database"] + """.users_preferences 
+            WHERE count < 5 AND user_id = """ + str(user_id) + """ AND type = 'artist' ORDER BY RAND() desc limit 4) as t2
+            limit 4;
+            """
+    return cmd
+
+
+def get_prefered_artist_hard(user_id):
+    cmd = cmd = """SELECT * FROM (SELECT preference FROM """ + settings_info["database"] + """.users_preferences 
+                WHERE count > 0 AND user_id = """ + str(user_id) + \
+                """ AND type = 'artist' ORDER BY count  ASC limit 1 ) as t1
+                UNION  
+                SELECT* FROM( SELECT preference FROM """ + settings_info["database"] + """.users_preferences 
+                    WHERE count < 5 AND user_id = """ + str(user_id) + \
+                """ AND type = 'artist' ORDER BY count  desc limit 3) as t2
+                UNION 
+                SELECT * FROM (SELECT preference FROM """ + settings_info["database"] + """.users_preferences 
+                WHERE count < 5 AND user_id = """ + str(user_id) + """ AND type = 'artist' ORDER BY RAND()  ASC limit 4) as t3
+                limit 4;
+                """
+    return cmd
+
+def get_prefered_artist_challenging(user_id):
+    cmd = """SELECT * FROM (SELECT preference FROM """ + settings_info["database"] + """.users_preferences 
+            WHERE count > 0 AND user_id = """+str(user_id)+""" AND type = 'artist' ORDER BY RAND()  ASC limit 5 ) as t1
+            UNION  
+            SELECT * FROM( SELECT preference FROM """ + settings_info["database"] + """.users_preferences 
+            WHERE user_id = """+str(user_id)+""" AND type = 'artist' ORDER BY RAND() desc limit 5) as t2
+            limit 5;
+            """
+    return cmd
+
+
+def get_preferred_artists(user_id, game_type):
     """
     return list of 4 artist with their data
     :param user_id:
-    :return:# returns dictionary with key = 'Artist'
-# { 'Artist': [
-#              ['artist1_name', 'artist1_gender', 'origin_country', 'birth_date', [list of songs]],
-#              ['artist2_name', 'artist2_gender', ....]
-#             ]
-# }
- -1 if there is a problem or list is empty.
+    :return: dictionary with key = 'Artist'
+     { 'Artist': [
+                  ['artist1_name', 'artist1_gender', 'origin_country', 'birth_date', [list of songs]],
+                  ['artist2_name', 'artist2_gender', ....]
+                 ]
+     }
+     -1 if there is a problem or list is empty.
     """
-    cmd = "SELECT preference FROM  " + settings_info["database"] + ".users_preferences WHERE users_preferences.count < 5 " \
-          "AND users_preferences.user_id = " + str(user_id) + " AND users_preferences.type = 'artist' limit 4;"
+    if game_type == Conventions.EASY_GAME_CODE:
+        cmd = get_prefered_artist_easy(user_id)
+    elif game_type == Conventions.HARD_GAME_CODE:
+        cmd = get_prefered_artist_hard(user_id)
+    else:
+        cmd = get_prefered_artist_challenging(user_id)
     info = get_info_by_command(cmd)
+
     if len(info) == 0:
         return -1
+
     artists_names = [a[0] for a in info]
     artists_list = list()
+
     for a_n in artists_names:
         artist_info = list(get_artist_info(a_n))
         songs = list(get_songs(a_n))
         artist_info.append(songs)
         artists_list.append(artist_info)
     preferred_artists = dict()
-    preferred_artists.__setitem__("Artist", artists_list)
+    preferred_artists._setitem_("Artist", artists_list)
+
+    print("List created: {}".format(preferred_artists))
     return preferred_artists
+
+
 """old version 
     cmd = "SELECT preference FROM " + settings_info["database"] + ".users_preferences WHERE users_preferences.count < 5 " \
           "AND users_preferences.user_id = " + str(user_id) + " AND users_preferences.type = 'artist' limit 4;"
@@ -437,9 +506,9 @@ def add_game(typ, score, user_id):
     :param user_id:
     :return:
     """
-    if typ == "EASY":
+    if typ == Conventions.EASY_GAME_CODE:
         typ = "first_game_points"
-    elif typ == "HARD":
+    elif typ == Conventions.HARD_GAME_CODE:
         typ = "second_game_points"
     else:
         typ = "third_game_points"
@@ -462,17 +531,18 @@ def get_top_players(game_type):
     :return:# return list of players: ['user1', 'user2']
   if no players, return -1
     """
-    if game_type == "EASY":
+    if game_type == Conventions.EASY_GAME_CODE:
         game_type = "first_game_points"
-    elif game_type == "HARD":
+    elif game_type == Conventions.HARD_GAME_CODE:
         game_type = "second_game_point"
     else:
         game_type = "third_game_points"
-    cmd = "SELECT username FROM " + settings_info["database"] + ".users ORDER BY users." + game_type + " DESC limit 3;"
+    cmd = "SELECT username,"+ game_type +\
+          " FROM " + settings_info["database"] +".users ORDER BY users." + game_type + " DESC limit 3;"
     info = get_info_by_command(cmd)
     if len(info) == 0:
         return -1
-    top = [p[0] for p in info]
+    top = [[p[0], p[1]] for p in info]
     return top
 
 
