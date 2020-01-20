@@ -34,7 +34,7 @@ def bar(progress, frame):
 
 def getGameInfoDict(Gamer_name):
     global GameInfoDict
-    GameInfoDict = gL.start(Gamer_name, Conventions.EASY_GAME_CODE)
+    GameInfoDict = gL.start(Gamer_name.get(), Conventions.EASY_GAME_CODE)
 
 
 def easy_game_window(window, Gamer_name):
@@ -64,6 +64,7 @@ def easy_game_window(window, Gamer_name):
         print(GameInfoDict)
 
     message1 = Label(frame, text='you play on: ' + GameInfoDict['artist_name'], fg='black', font='Ariel 16 bold')
+
     message1.grid(row=0, column=0, pady=(5, 5))
     message2 = Label(frame, text='the game will start  in 5 secound', fg='black', font='Ariel 10 bold')
     message2.grid(row=1, column=0, pady=(5, 5))
@@ -82,6 +83,7 @@ def showAttribute(Gamer_name, window, frame, GameInfoDict, i):
             message.grid(row=k, column=j, pady=(5, 5), padx=(5, 5))
     message3 = Label(frame, text=GameInfoDict['properties'][i], fg='black', font='Ariel 16 bold')
     message3.grid(row=randint(0, 16), column=randint(0, 16), pady=(0, 0))
+
     if i + 1 < len(GameInfoDict['properties']):
         frame.after(2000, showAttribute, Gamer_name, window, frame, GameInfoDict, i + 1)
     else:
@@ -92,13 +94,16 @@ def showQuestion(Gamer_name, window, frame, GameInfoDict, numberOfQ, answers, ge
     answers.append(get_anwser)
     if numberOfQ < len(GameInfoDict['questions'].keys()):
         list = frame.grid_slaves()
+
         for l in list:
             l.destroy()
         frame = Frame(window)
         frame.grid(row=1, column=1)
         list_of_q = []
-        for i in GameInfoDict['questions'].keys():
-            list_of_q.append(i)
+
+        for question_name in GameInfoDict['questions'].keys():
+            list_of_q.append(question_name)
+
         q = list_of_q[numberOfQ]
         question = Label(frame, text=q, fg='black', font='Ariel 16 bold')
         question.grid(row=0, column=0, pady=(10, 10))

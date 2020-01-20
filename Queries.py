@@ -226,14 +226,13 @@ def get_preferred_genres(user_id):
 
 
 def get_similar_artist(artist_name):
-
     genres = get_genre_by_artist(artist_name)
     artists = list()
     for g in genres:
         cmd = "SELECT name FROM " + settings_info["database"] + \
               ".artist WHERE id IN " \
-              "(SELECT artist_id FROM " + settings_info["database"] + ".artist_genres WHERE genre = '"+g+"');"
-        artists.extend([artist_name for artist_name in get_info_by_command(cmd)])
+              "(SELECT artist_id FROM " + settings_info["database"] + ".artist_genres WHERE genre = '"+g+"') LIMIT 5;"
+        artists.extend([artist_name[0] for artist_name in get_info_by_command(cmd)])
     return artists
 
 

@@ -2,9 +2,13 @@ import random
 import Queries
 import Conventions
 
-TESTING = True
+TESTING_VIEW = False
 DEBUGGING = True
 PLAYING_ARTIST_OFF_SET = 0
+
+DEBUGGING_GAME_END = True
+DEBUGGING_QUESTIONS_GENERATING = False
+
 NAME_OFF_SET = 0
 GENDER_OFF_SET = 1
 FROM_OFF_SET = 2
@@ -81,8 +85,46 @@ def load_user_from_data_base(username, password):
     return Queries.get_user_id(str(username), str(password))
 
 
+def calculate_final_score(answers_list, game_dict):
+    final_score = 0
+    q_index = 0
+
+    if DEBUGGING_GAME_END:
+        print("at 'calculate_final_score'")
+
+    for question in game_dict['questions'].values():
+        if DEBUGGING_GAME_END:
+            print("\tquestion: {}".format(question))
+            print("\tquestion['true']: {}\n\tanswer: {}".format(question['true'],
+                                                                answers_list[q_index]))
+
+        if question['true'] == answers_list[q_index]:
+            final_score += 50
+            if DEBUGGING_GAME_END:
+                print("Adding 50 points on right answer: {}".format(answers_list[q_index]))
+
+        q_index += 1
+
+    return final_score
+
+
 def end(username, answers_list, game_dict, game_type):
-    return MOCK_GAME_SCORE
+    if DEBUGGING_GAME_END:
+        print("Game ended with the following stats:\n\tusername: {}\n\tanswers_list{}\n\t".format(username, answers_list))
+
+    final_score = calculate_final_score(answers_list, game_dict)
+
+    if not TESTING_VIEW:
+        # get user ID
+        user_id = Queries.get_user_id_by_name(username)
+
+        # save the game
+        Queries.add_game(game_type, final_score, user_id)
+
+        # return final score
+        return final_score
+    else:
+        return MOCK_GAME_SCORE
     # answers_list = game.get_answers_list()
     #
     # questions_dict = game.get_questions_dict()
@@ -120,7 +162,7 @@ def generate_questions(raw_artists_dict):
     questions = [questions_map['from'](raw_artists_dict),
                  questions_map['genre'](raw_artists_dict),
                  questions_map['birth_date'](raw_artists_dict),
-                 questions_map['Similar'](raw_artists_dict)
+                 questions_map['similar'](raw_artists_dict)
                  ]  # TODO: add the rest of the questions to here
     random.shuffle(questions)  # shuffle
 
@@ -139,17 +181,21 @@ def build_questions_dict_for_view(questions_list):
     """
     questions_dict = dict()
 
-    for question in questions_list:
-        # index of the question
-        index = 1
+    if DEBUGGING_QUESTIONS_GENERATING:
+        print("Questions list is:\n{}".format(questions_list))
 
+    for question in questions_list:
         # insert question if it is not None
         if question:
-            question_name = "q" + str(index)
+            question_name = question['text']
+
+            if DEBUGGING_QUESTIONS_GENERATING:
+                print("Question name to add is: {}".format(question_name))
 
             questions_dict[question_name] = question
-            # increase index, as question was inserted to dict
-            index += 1
+
+    if DEBUGGING_QUESTIONS_GENERATING:
+        print("Questions dict build:\n{}".format(questions_dict))
 
     return questions_dict
 
@@ -157,14 +203,19 @@ def build_questions_dict_for_view(questions_list):
 def none_values_exist_in_answer_list(answers_list):
     for answer in answers_list:
         if answer is None:
+            if DEBUGGING_QUESTIONS_GENERATING:
+                print("answers list holds None values:{}".format(answers_list))
             return True
 
     return False
 
 
 def answers_list_empty_or_less_than_three_songs(answers_list):
-    return answers_list == Conventions.EMPTY_ANSWERS_LIST_CODE or \
-           len(answers_list) != Conventions.VALID_SONGS_ANSWERS_LIST_SIZE
+    if answers_list == Conventions.EMPTY_ANSWERS_LIST_CODE or \
+           len(answers_list) != Conventions.VALID_SONGS_ANSWERS_LIST_SIZE:
+        if DEBUGGING_QUESTIONS_GENERATING:
+            print("answers list is in wrong size of empty:{}".format(answers_list))
+        return None
 
 
 def generate_origin_question(raw_artists_dict):
@@ -198,15 +249,17 @@ def generate_birth_date_question(raw_artists_dict):
 
 
 def generate_genre_question(raw_artists_dict):
-    # create the list of genres by order of artists
-    list_of_genres = [Queries.get_genre_by_artist(artist_name) for artist_name in raw_artists_dict['Artist'][NAME_OFF_SET]]
-    genres_list_sizes = [len(lst) for lst in list_of_genres]
+    list_of_lists_of_genres = list()
+
+    for artist in raw_artists_dict['Artist']:
+        # appends a LIST of genres per artist name
+        list_of_lists_of_genres.append(Queries.get_genre_by_artist(artist[NAME_OFF_SET]))
 
     genres_for_question = list()
 
     # randomly pick a genre from the list of genres per artist
-    for genres_list in list_of_genres:
-        genres_for_question.append(genres_list[random.randint(0, len(genres_list - 1))])
+    for artist_genres_list in list_of_lists_of_genres:
+        genres_for_question.append(artist_genres_list[random.randint(0, len(artist_genres_list) - 1)])
 
     # check for None values
     if none_values_exist_in_answer_list(genres_for_question):
@@ -223,20 +276,25 @@ def generate_genre_question(raw_artists_dict):
 
 def generate_similar_artists_question(raw_artists_dict):
     # artist name
-    artist_name = raw_artists_dict['Artist'][NAME_OFF_SET]
+    artist_name = raw_artists_dict['Artist'][PLAYING_ARTIST_OFF_SET][NAME_OFF_SET]
 
     question_text = "Who is the most similar artist to this artist?"
-
-    # generate genres from db
-    genres_of_the_artist = Queries.get_genre_by_artist(artist_name)
 
     # generate similar artist by randomly picking a genre of similarity
     similar_artist_list = Queries.get_similar_artist(artist_name)
 
-    # randomply pick a similar artist from the similar_artits_list
+    # randomly pick a similar artist from the similar_artists_list
     similar_artist = similar_artist_list[random.randint(0, len(similar_artist_list) - 1)]
 
-    answers = [artist_name for artist_name in raw_artists_dict['Artist'][NAME_OFF_SET]]
+    if DEBUGGING_QUESTIONS_GENERATING:
+        print("Similar artist picked is: {}".format(similar_artist))
+
+    answers = list()
+
+    # insert all of the artists names
+    for artist in raw_artists_dict['Artist']:
+        answers.append(artist[NAME_OFF_SET])
+
     answers = answers[1:]  # remove the name of the artist we are playing on
     answers.append(similar_artist)  # append the name of the similar artist
 
@@ -247,7 +305,7 @@ def generate_similar_artists_question(raw_artists_dict):
     if answers_list_empty_or_less_than_three_songs(answers):
         return None
 
-    return build_question_dict(question_text, answers, similar_artist_list)
+    return build_question_dict(question_text, answers, similar_artist)
 
 
 def build_question_dict(text, answers, right_answer):
@@ -327,9 +385,9 @@ def generate_challenging_game(user_name, game_type):
 
         properties_list_for_each_artist.append(list_for_artist)
 
-    if not TESTING:
+    if not TESTING_VIEW:
         return {
-            "artist name": artists_list,
+            "artist_name": artists_list,
             "properties": properties_list_for_each_artist,
             "questions": generate_questions(raw_artists_dict)
         }
@@ -350,20 +408,19 @@ def generate_easy_or_hard_games(user_name, game_type):
             ...
         }
     '''
-    
-    print(raw_artists_dict)
+
     # generate the properties list
     properties = list()
     properties.append(raw_artists_dict['Artist'][PLAYING_ARTIST_OFF_SET][FROM_OFF_SET])  # from
     properties.append(raw_artists_dict['Artist'][PLAYING_ARTIST_OFF_SET][BIRTH_DATE_OFF_SET])  # birth date
 
-    # append all songs
-    for song in raw_artists_dict['Artist'][SONGS_LIST_OFF_SET]:
+    # append all the songs of the artist as properties
+    for song in raw_artists_dict['Artist'][PLAYING_ARTIST_OFF_SET][SONGS_LIST_OFF_SET]:
         properties.append(song)
 
-    if not TESTING:
+    if not TESTING_VIEW:
         return {
-            "artist name": raw_artists_dict['Artist'][PLAYING_ARTIST_OFF_SET][NAME_OFF_SET],
+            "artist_name": raw_artists_dict['Artist'][PLAYING_ARTIST_OFF_SET][NAME_OFF_SET],
             "properties": properties,
             "questions": generate_questions(raw_artists_dict)
         }

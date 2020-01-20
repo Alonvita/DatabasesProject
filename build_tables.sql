@@ -1,4 +1,11 @@
 
+
+CREATE USER IF NOT EXISTS 'funny_name'@'localhost' IDENTIFIED BY 'funny_name';
+CREATE DATABASE IF NOT EXISTS funny_name;
+GRANT ALL PRIVILEGES ON funny_name.* TO 'funny_name'@'localhost' WITH GRANT OPTION;
+GRANT FILE ON *.* to 'funny_name'@'localhost';
+USE funny_name;
+
 SET GLOBAL local_infile = ON;
 
 
