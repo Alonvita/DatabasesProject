@@ -284,7 +284,8 @@ def generate_challenging_game(user_name, game_type):
 def generate_easy_or_hard_games(user_name, game_type):
     user_id = Queries.get_user_id_by_name(user_name)  # generate user ID
 
-    raw_artists_dict = Queries.get_preferred_artists(user_id)  # generate raw artists dict
+    raw_artists_dict = Queries.get_preferred_artists(user_id, game_type)  # generate raw artists dict
+    print(raw_artists_dict)
     '''
     format:
         { 'Artist':
@@ -293,7 +294,8 @@ def generate_easy_or_hard_games(user_name, game_type):
             ...
         }
     '''
-
+    
+    print(raw_artists_dict)
     # generate the properties list
     properties = list()
     properties.append(raw_artists_dict['Artist'][PLAYING_ARTIST_OFF_SET][FROM_OFF_SET])  # from

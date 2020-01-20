@@ -1,5 +1,5 @@
 from tkinter import *
-from View import login_page
+from View import login_page, preferences_page
 from Logic import GameLogic as gL
 
 
@@ -30,7 +30,7 @@ def register_window(window, fileBackground):
     pwordEL.grid(row=2, column=1, padx=(0, 10))
 
     bottonSend = Button(frame, text='Register', bg="green", fg="black", font='Ariel 8 bold',
-                        command=lambda: validateRegister(frame, username, password))
+                        command=lambda: validateRegister(window, frame, username, password))
     bottonSend.grid(row=3, columnspan=2, pady=(10, 5))
 
     bottonLogin = Button(frame, text='Login Page', fg="black", font='Ariel 8 bold',
@@ -38,12 +38,11 @@ def register_window(window, fileBackground):
     bottonLogin.grid(row=4, columnspan=2, pady=(0, 10))
 
 
-def validateRegister(frame, name, pword):
+def validateRegister(window, frame, name, pword):
     print(name.get(), pword.get())
     validateR = gL.register(name.get(), pword.get())
     if validateR == 0:
         label = Label(frame, text='Exist', fg='red', font='Ariel 8 bold')
         label.grid(row=5, columnspan=2, pady=(10, 10))
     else:
-        label = Label(frame, text='Success', fg='green', font='Ariel 8 bold')
-        label.grid(row=5, columnspan=2, pady=(10, 10))
+        preferences_page.preference_window(window, name)
