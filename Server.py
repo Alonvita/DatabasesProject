@@ -100,11 +100,14 @@ class Server:
         :param command_string:
         :return:
         """
+        myresult = ""
         try:
             mycursor.execute(command_string)
             myresult = mycursor.fetchall()
         except mysql.connector.Error as err:
             print("get_info_by_command:Something went wrong: {}" + err.msg)
+            if err.msg == "Lost connection to MySQL server at 'localhost:3307'":
+                self.connect()
         return myresult
 
     def set_info_by_command(self, command_string):
@@ -118,4 +121,6 @@ class Server:
             mydb.commit()
         except mysql.connector.Error as err:
             print("set_info_by_command:Something went wrong: {}" + err.msg)
+            if err.msg == "Lost connection to MySQL server at 'localhost:3307'":
+                self.connect()
         print(command_string)

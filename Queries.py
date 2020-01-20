@@ -1,3 +1,5 @@
+import threading
+
 import Conventions
 import mysql.connector
 from sqlite3 import OperationalError
@@ -87,6 +89,20 @@ def get_preferred_genres(user_id):
     if len(genres)==0:
          return False
     return True
+
+def get_user_genres(user_id):
+    """
+    if there is  users ganres
+    :param user_id:
+    :return:
+    # returns ['pop', 'classical', 'dance']
+    """
+    print(user_id)
+    cmd = "SELECT preference  FROM " + sql_server.settings_info["database"] + ".users_preferences WHERE user_id = "+str(user_id)+" AND type = 'genre';"
+    genres = sql_server.get_info_by_command(cmd)
+    if len(genres)==0:
+         return -1
+    return [genre[0] for genre in genres]
 
 
 def get_similar_artist(artist_name):
@@ -238,6 +254,7 @@ def get_genre_by_artist(artist_name):
     command = """SELECT artist_genres.genre FROM artist JOIN artist_genres 
         ON artist_genres.artist_id = artist.id  
         WHERE artist.name = '""" + artist_name + "' GROUP BY artist_genres.genre;"""
+    print ( command)
     info = sql_server.get_info_by_command(command)
     if len(info)==0:
         return Conventions.EMPTY_ANSWERS_LIST_CODE
@@ -344,11 +361,22 @@ def get_preferred_artists(user_id, game_type):
 
     for a_n in artists_names:
         artist_info = list(get_artist_info(a_n))
-        songs = list(get_songs(a_n))
-        artist_info.append(songs)
+        songs_ = get_songs(a_n)
+        if songs_ != -1:
+            songs = list(songs_)
+            artist_info.append(songs)
         artists_list.append(artist_info)
+
+    # if their is less artist then needed, add more artist to user study and make query again
+    if (len(artists_list) < 5 and game_type == Conventions.CHALLENGING_GAME_CODE) or (len(artists_list) < 4):
+        add_preferences(user_id, get_user_genres(user_id))
+        return get_preferred_artists(user_id, game_type)
+
     preferred_artists = dict()
     preferred_artists.__setitem__("Artist", artists_list)
+
+    update_counter(user_id,artists_names,game_type)
+
 
     print("List created: {}".format(preferred_artists))
     return preferred_artists
@@ -374,16 +402,26 @@ def get_preferred_artists(user_id, game_type):
 # -------- RATINGS --------
 
 
-def update_counter(user_name, artists_played):  # TODO: artist is a list - each entry has a name
-    for a in artists_played:
+def update_counter(user_id, artists_played,game_type):  # TODO: artist is a list - each entry has a name
+    if game_type != Conventions.CHALLENGING_GAME_CODE:
         cmd = """UPDATE users_preferences
                 SET users_preferences.count = CASE
                 WHEN users_preferences.count IS NOT NULL THEN users_preferences.count + 1
                 ELSE  users_preferences.count
                 END
                 WHERE user_id = """ +\
-              str(get_user_id_by_name(user_name)) + " AND users_preferences.preference = '" + a + "';"
+              str(user_id) + " AND users_preferences.preference = '" + artists_played[0] + "';"
         sql_server.set_info_by_command(cmd)
+    else:
+        for artist in artists_played:
+            cmd = """UPDATE users_preferences
+                   SET users_preferences.count = CASE
+                   WHEN users_preferences.count IS NOT NULL THEN users_preferences.count + 1
+                   ELSE  users_preferences.count
+                   END
+                   WHERE user_id = """ + \
+                  str(user_id) + " AND users_preferences.preference = '" + artist + "';"
+            sql_server.set_info_by_command(cmd)
 
 
 def add_game(typ, score, user_id):
