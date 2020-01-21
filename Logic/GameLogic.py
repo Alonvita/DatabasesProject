@@ -7,6 +7,7 @@ from View.crash import crash_window
 
 TESTING_VIEW = False
 DEBUGGING = False
+DEBUGGING_RAW_DICT = True
 PLAYING_ARTIST_OFF_SET = 0
 
 DEBUGGING_GAME_END = True
@@ -381,7 +382,17 @@ def start(username, game_type):
 def raw_artists_dict_is_valid(raw_artists_dict):
     # check songs list length == 3
     for artist in raw_artists_dict['Artist']:
-        if len(artist[SONGS_LIST_OFF_SET]) != Conventions.VALID_SONGS_ANSWERS_LIST_SIZE:
+        if DEBUGGING_RAW_DICT:
+            print("Checking artist: {}\n\tsongs list: {}".format(artist, artist[SONGS_LIST_OFF_SET]))
+
+        if len(artist) != 5:
+            if DEBUGGING_RAW_DICT:
+                print("Error in artist length: {}".format(len(artist)))
+            return False
+
+        if len(artist[SONGS_LIST_OFF_SET]) < Conventions.VALID_SONGS_ANSWERS_LIST_SIZE:
+            if DEBUGGING_RAW_DICT:
+                print("Error in songs list length: {}".format(len(artist[SONGS_LIST_OFF_SET])))
             return False
 
     # TODO: check if need to do some more tests over artist
@@ -392,6 +403,8 @@ def check_raw_artists_dict(user_id, game_type, raw_artists_dict):
 
     # check dict
     while not raw_artists_dict_is_valid(dict_to_check):
+        if DEBUGGING_RAW_DICT:
+            print("Checking dict: {}".format(dict_to_check))
         # if dict is not valid, generate a new dict from DB
         dict_to_check = Queries.get_preferred_artists(user_id, game_type)
 
