@@ -540,9 +540,6 @@ def get_leader_board():
 
         top_players = Queries.get_top_players(game_type)
 
-        for data_list in top_players:
-            leader_board[game_type].append(data_list)
-
         if top_players != Conventions.EMPTY_ANSWERS_LIST_CODE:
             for data_list in top_players:
                 leader_board[game_type].append(data_list)
