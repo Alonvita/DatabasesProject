@@ -89,7 +89,7 @@ def get_preferred_genres(user_id):
     return True
 
 
-def get_similar_artist(artist_name):
+def get_similar_and_different_artists_list(artist_name):
     genres = get_genre_by_artist(artist_name)
     artists = list()
     for g in genres:

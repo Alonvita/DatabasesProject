@@ -64,7 +64,7 @@ def register(user_name, password):
     add_success = 1
     add_fail = 0
 
-    print("Game logic: "+user_name+" "+password)
+    print("Game logic: " + user_name + " " + password)
     if Queries.add_user(user_name, password) == ADD_FAILURE:
         return add_fail
 
@@ -126,25 +126,6 @@ def end(username, answers_list, game_dict, game_type):
         return final_score
     else:
         return MOCK_GAME_SCORE
-    # answers_list = game.get_answers_list()
-    #
-    # questions_dict = game.get_questions_dict()
-    #
-    # # tag the answer (True/False for right/wrong)
-    # answers_list.append(questions_dict[question][True] == answer)
-    #
-    # # check if score should be calculated
-    # if len(questions_dict) == answers_list:
-    #     # tag the game ending time
-    #     game.set_end_time(self.collect_time_stamp())
-    #
-    #     # calculate the score
-    #     game.set_final_score(
-    #         self.generate_final_score()(
-    #             len(questions_dict),
-    #             answers_list.count(True)
-    #         )
-    #     )
 
 
 def generate_questions(raw_artists_dict, game_type):
@@ -165,7 +146,7 @@ def generate_questions(raw_artists_dict, game_type):
                  questions_map['genre'](raw_artists_dict),
                  questions_map['birth_date'](raw_artists_dict),
                  questions_map['similar'](raw_artists_dict)
-                 ]  # TODO: add the rest of the questions to here
+                 ]
     random.shuffle(questions)  # shuffle
 
     # add the artist name question as first question for a hard game
@@ -184,7 +165,6 @@ def generate_name_question(raw_artists_dict):
     right_answer = raw_artists_dict['Artist'][PLAYING_ARTIST_OFF_SET][NAME_OFF_SET]
 
     return build_question_dict(question_text, answers, right_answer)
-
 
 
 def build_questions_dict_for_view(questions_list):
@@ -215,6 +195,10 @@ def build_questions_dict_for_view(questions_list):
     return questions_dict
 
 
+def valid_songs_list_received(songs_list):
+    pass
+
+
 def none_values_exist_in_answer_list(answers_list):
     for answer in answers_list:
         if answer is None:
@@ -225,7 +209,7 @@ def none_values_exist_in_answer_list(answers_list):
     return False
 
 
-def answers_list_empty_or_less_than_three_songs(answers_list):
+def answers_list_empty_or_holds_less_than_three_values(answers_list):
     if answers_list == Conventions.EMPTY_ANSWERS_LIST_CODE or \
            len(answers_list) != Conventions.VALID_SONGS_ANSWERS_LIST_SIZE:
         if DEBUGGING_QUESTIONS_GENERATING:
@@ -260,7 +244,7 @@ def generate_origin_question(raw_artists_dict):
     if none_values_exist_in_answer_list(answers):
         return None
 
-    if answers_list_empty_or_less_than_three_songs(answers):
+    if answers_list_empty_or_holds_less_than_three_values(answers):
         return None
 
     right_answer = raw_artists_dict['Artist'][PLAYING_ARTIST_OFF_SET][FROM_OFF_SET]  # the origin of the playing artist
@@ -275,7 +259,7 @@ def generate_birth_date_question(raw_artists_dict):
     if none_values_exist_in_answer_list(answers):
         return None
 
-    if answers_list_empty_or_less_than_three_songs(answers):
+    if answers_list_empty_or_holds_less_than_three_values(answers):
         return None
 
     right_answer = answers[0]
@@ -300,7 +284,7 @@ def generate_genre_question(raw_artists_dict):
     if none_values_exist_in_answer_list(genres_for_question):
         return None
 
-    if answers_list_empty_or_less_than_three_songs(genres_for_question):
+    if answers_list_empty_or_holds_less_than_three_values(genres_for_question):
         return None
 
     question_text = "What is the artist's genre?"
@@ -316,31 +300,22 @@ def generate_similar_artists_question(raw_artists_dict):
     question_text = "Who is the most similar artist to this artist?"
 
     # generate similar artist by randomly picking a genre of similarity
-    similar_artist_list = Queries.get_similar_artist(artist_name)
+    similar_artists_list = Queries.get_similar_and_different_artists_list(artist_name)
 
-    # randomly pick a similar artist from the similar_artists_list
-    similar_artist = similar_artist_list[random.randint(0, len(similar_artist_list) - 1)]
-
-    if DEBUGGING_QUESTIONS_GENERATING:
-        print("Similar artist picked is: {}".format(similar_artist))
-
-    answers = list()
-
-    # insert all of the artists names
-    for artist in raw_artists_dict['Artist']:
-        answers.append(artist[NAME_OFF_SET])
-
-    answers = answers[1:]  # remove the name of the artist we are playing on
-    answers.append(similar_artist)  # append the name of the similar artist
+    '''
+    Returned from the get_similar_artist function an array with 4 artists:
+        [0] - the similar artist
+        [1 through 3] - artists that are 100% different
+    '''
 
     # check None values
-    if none_values_exist_in_answer_list(answers):
+    if none_values_exist_in_answer_list(similar_artists_list):
         return None
 
-    if answers_list_empty_or_less_than_three_songs(answers):
+    if answers_list_empty_or_holds_less_than_three_values(similar_artists_list):
         return None
 
-    return build_question_dict(question_text, answers, similar_artist)
+    return build_question_dict(question_text, similar_artists_list, similar_artists_list[0])
 
 
 def build_question_dict(text, answers, right_answer):
@@ -355,19 +330,19 @@ def get_all_preferences():
     return Queries.get_all_genres()
 
 
-def get_leaderboard():
-    leaderboard = dict()
+def get_leader_board():
+    leader_board = dict()
 
     for game_type in GAME_TYPES:
-        leaderboard[game_type] = list()
-        leaderboard[game_type].append(['Player name', 'Score'])
+        leader_board[game_type] = list()
+        leader_board[game_type].append(['Player name', 'Score'])
 
         top_players = Queries.get_top_players(game_type)
 
         for data_list in top_players:
-            leaderboard[game_type].append(data_list)
+            leader_board[game_type].append(data_list)
 
-    return leaderboard
+    return leader_board
 
     # FORMAT:
     # {
@@ -396,10 +371,33 @@ def start(username, game_type):
     return generate_challenging_game(username, game_type)
 
 
+def raw_artists_dict_is_valid(raw_artists_dict):
+    # check songs list length == 3
+    for artist in raw_artists_dict['Artist']:
+        if len(artist[SONGS_LIST_OFF_SET]) != Conventions.VALID_SONGS_ANSWERS_LIST_SIZE:
+            return False
+
+    # TODO: check if need to do some more tests over artist
+
+
+def check_raw_artists_dict(user_id, game_type, raw_artists_dict):
+    dict_to_check = raw_artists_dict
+
+    # check dict
+    while not raw_artists_dict_is_valid(dict_to_check):
+        # if dict is not valid, generate a new dict from DB
+        dict_to_check = Queries.get_preferred_artists(user_id, game_type)
+
+    return dict_to_check
+
+
 def generate_challenging_game(user_name, game_type):
     user_id = load_user_id_only_by_name(user_name)  # generate user ID
 
     raw_artists_dict = Queries.get_preferred_artists(user_id, game_type)  # generate raw artists dict
+
+    # check the dict
+    raw_artists_dict = check_raw_artists_dict(user_id, game_type, raw_artists_dict)
 
     # generate artists list
     artists_list = [artist[NAME_OFF_SET] for artist in raw_artists_dict['Artist']]
@@ -434,7 +432,12 @@ def generate_easy_or_hard_games(user_name, game_type):
     user_id = load_user_id_only_by_name(user_name)  # generate user ID
 
     raw_artists_dict = Queries.get_preferred_artists(user_id, game_type)  # generate raw artists dict
-    print(raw_artists_dict)
+
+    # check the dict
+    raw_artists_dict = check_raw_artists_dict(user_id, game_type, raw_artists_dict)
+
+    if DEBUGGING:
+        print(raw_artists_dict)
     '''
     format:
         { 'Artist':

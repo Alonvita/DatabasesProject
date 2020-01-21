@@ -32,7 +32,7 @@ def bar(progress, frame):
 
 def getleaderboard():
     global leaderboard
-    leaderboard = gL.get_leaderboard()
+    leaderboard = gL.get_leader_board()
 
 
 def leaderboard_window(window, Gamer_name):
