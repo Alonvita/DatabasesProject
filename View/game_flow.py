@@ -54,7 +54,6 @@ def run():
 
 
 def getQueries():
-    print("ss")
     global serverRun
     Queries.run()
     serverRun = 1
@@ -64,5 +63,3 @@ if __name__ == "__main__":
     t = threading.Thread(target=getQueries)
     t.start()
     run()
-
-
