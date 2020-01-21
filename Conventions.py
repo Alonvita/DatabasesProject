@@ -99,8 +99,10 @@ QUESTIONS_DICT_GENRE = "Genre"
 QUESTIONS_DICT_BIRTH_DATE = "Birth_Date"
 QUESTIONS_DICT_FROM = "From"
 QUESTIONS_DICT_SONGS = "Songs"
+QUESTIONS_DICT_SIMILAR = "Similar"
 
 QUESTIONS_STRINGS_DICT = {
+    QUESTIONS_DICT_SIMILAR: "Who is the most similar artist to this artist?",
     QUESTIONS_DICT_NAME: "What was the artist's name",
     QUESTIONS_DICT_GENRE: "Which of the following was one of the artist's genres?",
     QUESTIONS_DICT_BIRTH_DATE: "When was the artist born?",

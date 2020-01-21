@@ -153,14 +153,14 @@ def generate_questions(raw_artists_dict, game_type):
     }
 
     # add questions
-    questions = [questions_map[Conventions.FROM](raw_artists_dict),
-                 questions_map[Conventions.GENRE](raw_artists_dict),
-                 questions_map[Conventions.BIRTH_DATE](raw_artists_dict),
-                 questions_map[Conventions.SIMILAR](raw_artists_dict)
+    questions = [questions_map[Conventions.FROM](raw_artists_dict, game_type),
+                 questions_map[Conventions.GENRE](raw_artists_dict, game_type),
+                 questions_map[Conventions.BIRTH_DATE](raw_artists_dict, game_type),
+                 questions_map[Conventions.SIMILAR](raw_artists_dict, game_type)
                  ]
 
     # add songs questions
-    songs_questions = generate_songs_questions(raw_artists_dict)
+    songs_questions = generate_songs_questions(raw_artists_dict, game_type)
 
     if DebuggingConventions.DEBUGGING_SONGS_LIST_CREATION:
         for songs_question in songs_questions:
@@ -187,12 +187,14 @@ def generate_questions(raw_artists_dict, game_type):
     return build_questions_dict_for_view(questions)
 
 
-def generate_songs_questions(raw_artists_dict):
+def generate_songs_questions(raw_artists_dict, game_type=None):
     """
     generates the songs questions from the given raw_artists_dict
     :param raw_artists_dict:
     :return:
     """
+    artist_to_play_on = pick_artist_to_play_on(raw_artists_dict, game_type)
+
     if DebuggingConventions.DEBUGGING_SONGS_LIST_CREATION:
         print("---- AT SONGS QUESTIONS LIST CREATION ----")
 
@@ -203,12 +205,20 @@ def generate_songs_questions(raw_artists_dict):
 
     question_text = Conventions.QUESTIONS_STRINGS_DICT[Conventions.QUESTIONS_DICT_SONGS]
 
+    if game_type == Conventions.CHALLENGING_GAME_CODE:
+        question_text += add_artist_name_to_challenging_question(
+            load_offset_from_raw_artists_dict(raw_artists_dict,
+                                              Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET,
+                                              artist_to_play_on,
+                                              Conventions.NAME_OFF_SET)
+        )
+
     for index in range(min_songs_list_size):
         # load all the songs for this index
         answers = [artist[Conventions.SONGS_LIST_OFF_SET][index] for artist in
                    raw_artists_dict[Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET]]
         # get the right answer
-        right_answer = answers[Conventions.LIST_BEGINNING_OFF_SET]
+        right_answer = answers[artist_to_play_on]
 
         # append the built question to the questions dict
         out_questions_list.append(build_question_dict(question_text, answers, right_answer))
@@ -216,14 +226,23 @@ def generate_songs_questions(raw_artists_dict):
     return out_questions_list
 
 
-def generate_name_question(raw_artists_dict):
+def generate_name_question(raw_artists_dict, game_type):
     """
     generates the name question for the playing artist, given the raw_artists_dict
 
     :param raw_artists_dict:
     :return:
     """
-    question_text = "What is the artist that you are playing on?"
+    question_text = Conventions.QUESTIONS_STRINGS_DICT[Conventions.QUESTIONS_DICT_NAME]
+
+    if game_type == Conventions.CHALLENGING_GAME_CODE:
+        question_text += add_artist_name_to_challenging_question(
+            load_offset_from_raw_artists_dict(raw_artists_dict,
+                                              Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET,
+                                              Conventions.PLAYING_ARTIST_OFF_SET,
+                                              Conventions.NAME_OFF_SET)
+        )
+
     answers = [artist[Conventions.NAME_OFF_SET] for artist in
                raw_artists_dict[Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET]]  # append all artists names
     right_answer = load_offset_from_raw_artists_dict(raw_artists_dict,
@@ -312,19 +331,30 @@ def generate_random_list_of_origins():
     return origins_list_to_return
 
 
-def generate_origin_question(raw_artists_dict):
+def generate_origin_question(raw_artists_dict, game_type=None):
     """
     generates the origin question
 
     :param raw_artists_dict:
     :return:
     """
+    artist_to_play_on = pick_artist_to_play_on(raw_artists_dict, game_type)
+
     question_text = Conventions.QUESTIONS_STRINGS_DICT[Conventions.QUESTIONS_DICT_FROM]
+
+    if game_type == Conventions.CHALLENGING_GAME_CODE:
+        question_text += add_artist_name_to_challenging_question(
+            load_offset_from_raw_artists_dict(raw_artists_dict,
+                                              Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET,
+                                              artist_to_play_on,
+                                              Conventions.NAME_OFF_SET)
+        )
+
     # generate a random list of origins and add the right answer
     answers = generate_random_list_of_origins()
     answers.append(load_offset_from_raw_artists_dict(raw_artists_dict,
                                                      Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET,
-                                                     Conventions.PLAYING_ARTIST_OFF_SET,
+                                                     artist_to_play_on,
                                                      Conventions.FROM_OFF_SET))
 
     if none_values_exist_in_answer_list(answers):
@@ -333,19 +363,32 @@ def generate_origin_question(raw_artists_dict):
     if answers_list_empty_or_holds_less_than_three_values(answers):
         return None
 
-    right_answer = raw_artists_dict[Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET][Conventions.PLAYING_ARTIST_OFF_SET][Conventions.FROM_OFF_SET]  # the origin of the playing artist
+    # the origin of the playing artist as the right answer
+    right_answer = \
+        raw_artists_dict[Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET][artist_to_play_on][Conventions.FROM_OFF_SET]
 
     return build_question_dict(question_text, answers, right_answer)
 
 
-def generate_birth_date_question(raw_artists_dict):
+def generate_birth_date_question(raw_artists_dict, game_type=None):
     """
     generates the birth date question
 
     :param raw_artists_dict:
     :return:
     """
+    artist_to_play_on = pick_artist_to_play_on(raw_artists_dict, game_type)
+
     question_text = Conventions.QUESTIONS_STRINGS_DICT[Conventions.QUESTIONS_DICT_BIRTH_DATE]
+
+    if game_type == Conventions.CHALLENGING_GAME_CODE:
+        question_text += add_artist_name_to_challenging_question(
+            load_offset_from_raw_artists_dict(raw_artists_dict,
+                                              Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET,
+                                              artist_to_play_on,
+                                              Conventions.NAME_OFF_SET)
+        )
+
     answers = [artist[Conventions.BIRTH_DATE_OFF_SET] for artist in
                raw_artists_dict[Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET]]
 
@@ -355,18 +398,20 @@ def generate_birth_date_question(raw_artists_dict):
     if answers_list_empty_or_holds_less_than_three_values(answers):
         return None
 
-    right_answer = answers[Conventions.LIST_BEGINNING_OFF_SET]
+    right_answer = answers[artist_to_play_on]
 
     return build_question_dict(question_text, answers, right_answer)
 
 
-def generate_genre_question(raw_artists_dict):
+def generate_genre_question(raw_artists_dict, game_type=None):
     """
     generates the genre question
 
     :param raw_artists_dict:
     :return:
     """
+    artist_to_play_on = pick_artist_to_play_on(raw_artists_dict, game_type)
+
     list_of_lists_of_genres = list()
 
     for artist in raw_artists_dict[Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET]:
@@ -387,33 +432,46 @@ def generate_genre_question(raw_artists_dict):
         return None
 
     question_text = Conventions.QUESTIONS_STRINGS_DICT[Conventions.QUESTIONS_DICT_GENRE]
-    right_answer = genres_for_question[Conventions.LIST_BEGINNING_OFF_SET]
+
+    if game_type == Conventions.CHALLENGING_GAME_CODE:
+        question_text += add_artist_name_to_challenging_question(
+            load_offset_from_raw_artists_dict(raw_artists_dict,
+                                              Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET,
+                                              artist_to_play_on,
+                                              Conventions.NAME_OFF_SET)
+        )
+
+    right_answer = genres_for_question[artist_to_play_on]
 
     return build_question_dict(question_text, genres_for_question, right_answer)
 
 
-def generate_similar_artists_question(raw_artists_dict):
+def generate_similar_artists_question(raw_artists_dict, game_type=None):
     """
     generates the similar artists question
     :param raw_artists_dict:
     :return:
     """
+    artist_to_play_on = pick_artist_to_play_on(raw_artists_dict, game_type)
+
     # artist name
     artist_name = load_offset_from_raw_artists_dict(raw_artists_dict,
                                                     Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET,
-                                                    Conventions.PLAYING_ARTIST_OFF_SET,
+                                                    artist_to_play_on,
                                                     Conventions.NAME_OFF_SET)
 
-    question_text = "Who is the most similar artist to this artist?"
+    question_text = Conventions.QUESTIONS_STRINGS_DICT[Conventions.QUESTIONS_DICT_SIMILAR]
+
+    if game_type == Conventions.CHALLENGING_GAME_CODE:
+        question_text += add_artist_name_to_challenging_question(
+            load_offset_from_raw_artists_dict(raw_artists_dict,
+                                              Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET,
+                                              artist_to_play_on,
+                                              Conventions.NAME_OFF_SET)
+        )
 
     # generate similar artist by randomly picking a genre of similarity
     similar_artists_list = Queries.get_similar_and_different_artists_list(artist_name)
-
-    '''
-    Returned from the get_similar_artist function an array with 4 artists:
-        [0] - the similar artist
-        [1 through 3] - artists that are 100% different
-    '''
 
     # check None values
     if none_values_exist_in_answer_list(similar_artists_list):
@@ -422,7 +480,7 @@ def generate_similar_artists_question(raw_artists_dict):
     if answers_list_empty_or_holds_less_than_three_values(similar_artists_list):
         return None
 
-    return build_question_dict(question_text, similar_artists_list, similar_artists_list[0])
+    return build_question_dict(question_text, similar_artists_list, similar_artists_list[Conventions.ZERO])
 
 
 def build_question_dict(text, answers, right_answer):
@@ -554,22 +612,28 @@ def generate_challenging_game(user_name, game_type):
     properties_list_for_each_artist = list()
 
     for artist in raw_artists_dict[Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET]:
+        if DebuggingConventions.DEBUGGING_CHALLENGING_GAME:
+            print("artist is: {}\n\tfrom: {}\n\tborn on: {}".format(artist,
+                                                                    artist[Conventions.FROM_OFF_SET],
+                                                                    artist[Conventions.BIRTH_DATE_OFF_SET]))
+
         # create a list per artist
         properties_list_for_artist = list()
         
         # append relevant information
         properties_list_for_artist.append(Conventions.ORIGINS_STR +
                                           load_offset_from_raw_artists_dict(
-                                              artist,
-                                              Conventions.PLAYING_ARTIST_OFF_SET,
-                                              Conventions.FROM_OFF_SET))  # from
+                                              artist, Conventions.FROM_OFF_SET))  # from
         properties_list_for_artist.append(Conventions.BIRTH_DATE_STR +
                                           load_offset_from_raw_artists_dict(
-                                              artist,
-                                              Conventions.PLAYING_ARTIST_OFF_SET,
-                                              Conventions.BIRTH_DATE_OFF_SET))  # birth day
+                                              artist, Conventions.BIRTH_DATE_OFF_SET))  # birth day
 
         generate_songs_list(raw_artists_dict, properties_list_for_artist)
+
+        if DebuggingConventions.DEBUGGING_CHALLENGING_GAME:
+            print("Created properties list for: {}".format(artist[Conventions.NAME_OFF_SET]))
+
+            print("properties list is:\n{}".format(properties_list_for_artist))
 
         properties_list_for_each_artist.append(properties_list_for_artist)
 
@@ -671,3 +735,27 @@ def load_offset_from_raw_artists_dict(raw_artists_dict, offset_one, offset_two=N
     if DebuggingConventions.DEBUGGING_RAW_DICT_ACCESS:
         print("raw_artists_dict will return: {}".format(raw_artists_dict[offset_one]))
     return raw_artists_dict[offset_one]
+
+
+def add_artist_name_to_challenging_question(artist_name):
+    """
+    creates a special wrapping for a challenging question, containing the artist name
+    :param artist_name:
+    :return:
+    """
+    return "(on artist: " + artist_name + ")"
+
+
+def pick_a_random_number_from_zero_to(num):
+    return random.randint(0, num - 1)
+
+
+def pick_artist_to_play_on(raw_artists_dict, game_type):
+    if game_type == Conventions.CHALLENGING_GAME_CODE:
+        # generate a random number to play on
+        artist_to_play_on = pick_a_random_number_from_zero_to(
+            len(raw_artists_dict[Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET]))
+    else:
+        artist_to_play_on = Conventions.ZERO
+
+    return artist_to_play_on
