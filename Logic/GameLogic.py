@@ -215,7 +215,7 @@ def none_values_exist_in_answer_list(answers_list):
 
 def answers_list_empty_or_holds_less_than_three_values(answers_list):
     if answers_list == Conventions.EMPTY_ANSWERS_LIST_CODE or \
-           len(answers_list) != Conventions.VALID_SONGS_ANSWERS_LIST_SIZE:
+           len(answers_list) != Conventions.VALID_ANSWERS_LIST_SIZE:
         if DEBUGGING_QUESTIONS_GENERATING:
             print("answers list is in wrong size of empty:{}".format(answers_list))
         return None
