@@ -395,6 +395,7 @@ def generate_birth_date_question(raw_artists_dict, game_type=None):
 
     question_text = Conventions.QUESTIONS_STRINGS_DICT[Conventions.QUESTIONS_DICT_BIRTH_DATE]
 
+    # add the name of the artist
     if game_type == Conventions.CHALLENGING_GAME_CODE:
         question_text += add_artist_name_to_challenging_question(
             load_offset_from_raw_artists_dict(raw_artists_dict,
@@ -405,6 +406,9 @@ def generate_birth_date_question(raw_artists_dict, game_type=None):
 
     answers = [artist[Conventions.BIRTH_DATE_OFF_SET] for artist in
                raw_artists_dict[Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET]]
+
+    # take only 4 answers
+    answers = answers[:4]
 
     if none_values_exist_in_answer_list(answers):
         return None
