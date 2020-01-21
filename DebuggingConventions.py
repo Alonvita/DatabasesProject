@@ -1,5 +1,16 @@
 import Conventions
 
+# ---- GAME LOGIC ----
+
+TESTING_VIEW = False
+GENERALLY_DEBUGGING_GAME_LOGIC = False
+DEBUGGING_RAW_DICT = False
+DEBUGGING_SONGS_LIST_CREATION = False
+DEBUGGING_RAW_DICT_ACCESS = False
+
+DEBUGGING_GAME_END = False
+DEBUGGING_QUESTIONS_GENERATING = False
+
 MOCK_QUESTIONS_DICT = {
             "q1": {
                 "text": "Country?",
