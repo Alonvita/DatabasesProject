@@ -151,6 +151,7 @@ def add_preferences(user_id, genres_list):  # todo: change only to genre
     :param genres_list:
     :return
     """
+    print("ganre list, add pref:", genres_list)
     if len(genres_list) != 0:
         for pref in genres_list["Genre"]:
             insert_pref = """INSERT INTO """ + sql_server.settings_info["database"] + """.users_preferences(user_id,type,preference) VALUES(""" + str(
@@ -383,7 +384,9 @@ def get_preferred_artists(user_id, game_type):
 
     # if their is less artist then needed, add more artist to user study and make query again
     if (len(artists_list) < 5 and game_type == Conventions.CHALLENGING_GAME_CODE) or (len(artists_list) < 4):
-        add_preferences(user_id, get_user_genres(user_id))
+        prf = dict()
+        prf["Genre"] = get_user_genres(user_id)
+        add_preferences(user_id, prf)
         return get_preferred_artists(user_id, game_type)
 
     preferred_artists = dict()
