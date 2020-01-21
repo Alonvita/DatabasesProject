@@ -35,11 +35,13 @@ def getleaderboard():
     leaderboard = gL.get_leader_board()
 
 
-def leaderboard_window(window, Gamer_name):
+def leaderboard_window(window, Gamer_name, fileBackground2):
     global leaderboard
     for widget in window.winfo_children():
         widget.destroy()
-    frame = Frame(window)
+    background_label = Label(window, image=fileBackground2)
+    background_label.place(x=0, y=0, relwidth=1, relheight=1)
+    frame = Frame(window, bg="white")
     frame.grid(row=1, column=1)
 
     frame.grid_columnconfigure(0, weight=1)
@@ -47,8 +49,8 @@ def leaderboard_window(window, Gamer_name):
 
     t = threading.Thread(target=getleaderboard)
     t.start()
-    message1 = Label(frame, text='Please Wait...', fg='black', font='Ariel 16 bold')
-    message1.grid(row=0, column=0, pady=(5, 5))
+    message1 = Label(frame, text='Please Wait...', fg='black', bg="white", font=("Comic Sans MS", 16, "bold"))
+    message1.grid(row=0, column=0, pady=(15, 5), padx=(10, 10))
     progress = Progressbar(frame, orient=HORIZONTAL, length=100, mode='indeterminate')
     progress.grid(row=1, column=0, pady=(5, 5))
     bar(progress, frame)
@@ -56,13 +58,13 @@ def leaderboard_window(window, Gamer_name):
     for l in listt:
         l.destroy()
 
-    name = Label(frame, text='Leaderboard', fg='black', font='Ariel 16 bold')
+    name = Label(frame, text='Leaderboard', fg='black', bg="white", font=("Comic Sans MS", 20))
     name.grid(row=0, column=0, pady=(10, 10))
 
     i = 1
     for key in leaderboard.keys():
         i += 1
-        name1 = Label(frame, text=key, fg='black', font='Ariel 10 bold')
+        name1 = Label(frame, text=key, fg='black', bg="white", font=("Comic Sans MS", 12))
         name1.grid(row=i, column=0, pady=(5, 5))
         tv = Treeview(frame, height=len(leaderboard[key])-1)
         tv['columns'] = (leaderboard[key][0][1])
@@ -78,11 +80,11 @@ def leaderboard_window(window, Gamer_name):
         i += 1
         treeview.grid(row=i, column=0, pady=(10, 10))
 
-    bottonEasy = Button(frame, text='Go back', bg="green", fg="white", font='Ariel 12 bold',
-                        command=lambda: start(window, Gamer_name))
+    bottonEasy = Button(frame, text='Go back', bg="#10c716", fg="white", font=("Comic Sans MS", 16),
+                        command=lambda: start(window, Gamer_name, fileBackground2))
     bottonEasy.grid(row=i+1, column=0, pady=(5, 5))
 
 
-def start(window, Gamer_name):
-    start_menu.start_menu_window(window, Gamer_name)
+def start(window, Gamer_name, fileBackground2):
+    start_menu.start_menu_window(window, Gamer_name, fileBackground2)
 

@@ -40,6 +40,9 @@ def run():
     backgroundName = sys.path[0] + '\\background.png'
     fileBackground = PhotoImage(file=backgroundName)
 
+    backgroundName2 = sys.path[0] + '\\bg2.png'
+    fileBackground2 = PhotoImage(file=backgroundName2)
+
     frame = Frame(window)
     frame.grid(row=1, column=1)
     frame.grid_columnconfigure(0, weight=1)
@@ -50,7 +53,7 @@ def run():
     progress.grid(row=1, column=0, pady=(5, 5))
     bar(progress, frame)
 
-    login_page.login_window(window, fileBackground)
+    login_page.login_window(window, fileBackground, fileBackground2)
     window.mainloop()
 
 

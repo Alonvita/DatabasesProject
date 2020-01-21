@@ -34,14 +34,18 @@ def getpre():
     preferences_dict = gL.get_all_preferences()
 
 
-def preference_window(window, name):
+def preference_window(window, name, fileBackground, fileBackground2):
     global preferences_dict
 
     for widget in window.winfo_children():
         widget.destroy()
+
+    background_label = Label(window, image=fileBackground)
+    background_label.place(x=0, y=0, relwidth=1, relheight=1)
     frame = Frame(window)
     frame.grid(row=1, column=1)
-
+    background_label2 = Label(frame, image=fileBackground2)
+    background_label2.place(x=0, y=0, relwidth=1, relheight=1)
     frame.grid_columnconfigure(0, weight=1)
     frame.grid_rowconfigure(0, weight=1)
 
@@ -49,19 +53,24 @@ def preference_window(window, name):
     t = threading.Thread(target=getpre)
     t.start()
 
-    message1 = Label(frame, text='Please Wait...', fg='black', font='Ariel 16 bold')
-    message1.grid(row=0, column=0, pady=(5, 5))
+    message1 = Label(frame, text='Please Wait...', fg='black', bg="white", font=("Comic Sans MS", 16))
+    message1.grid(row=0, column=0, pady=(15, 5), padx=(10, 10))
     progress = Progressbar(frame, orient=HORIZONTAL, length=100, mode='indeterminate')
-    progress.grid(row=1, column=0, pady=(5, 5))
+    progress.grid(row=1, column=0, pady=(5, 15))
     bar(progress, frame)
 
     listt = frame.grid_slaves()
-
     for l in listt:
         l.destroy()
 
-    label = Label(frame, text='Preference manu', fg='black', font='Ariel 16 bold')
+    label = Label(frame, text='Preference manu', fg='black', bg="white", font=("Comic Sans MS", 20))
     label.grid(row=0, columnspan=7, pady=(10, 10))
+    note = Label(frame, text='The game will choose artists based on your choices', bg="white", fg='black',
+                 font=("Comic Sans MS", 16))
+    note2 = Label(frame, text='You can choose the preferred genre only once', bg="white", fg='black',
+                  font=("Comic Sans MS", 16))
+    note.grid(row=1, columnspan=7, pady=(5, 1))
+    note2.grid(row=2, columnspan=7, pady=(1, 5))
 
     choice_dic = {}
     for preference in list(preferences_dict.keys()):
@@ -71,18 +80,15 @@ def preference_window(window, name):
             var = IntVar()
             choice_dic[preference].append(var)
             i += 1
-    rowindex = 1
+    rowindex = 3
     colindex = 0
 
     for preference in list(preferences_dict.keys()):
-        pre_name = Label(frame, text='choose: ' + preference, fg='black', font='Ariel 16 bold')
-        pre_name.grid(row=rowindex, columnspan=7, pady=(10, 10))
-        rowindex += 1
         i = 0
         for text in preferences_dict[preference]:
-            b = Checkbutton(frame, text=text,
+            b = Checkbutton(frame, text=text, bg="white", font=("Comic Sans MS", 8),
                             variable=choice_dic[preference][i], offvalue="L")
-            b.grid(row=rowindex, column=colindex, pady=(10, 10))
+            b.grid(row=rowindex, column=colindex, pady=(5, 5))
             if colindex < 6:
                 colindex += 1
             else:
@@ -92,12 +98,12 @@ def preference_window(window, name):
         rowindex += 1
         colindex = 0
 
-    bottonSend = Button(frame, text='Continue', bg="green", fg="black", font='Ariel 8 bold',
-                        command=lambda: preference_button(window, preferences_dict, choice_dic, name))
+    bottonSend = Button(frame, text='Continue', bg="#10c716", fg="black", font=("Comic Sans MS", 16),
+                        command=lambda: preference_button(window, frame, preferences_dict, choice_dic, name, rowindex, fileBackground2))
     bottonSend.grid(row=rowindex, columnspan=7, pady=(10, 5))
 
 
-def preference_button(window, pre_dictionary, choice_dic, name):
+def preference_button(window, frame, pre_dictionary, choice_dic, name, rowindex, fileBackground2):
     return_dictionary = {}
     for preference in list(choice_dic.keys()):
         return_dictionary[preference] = []
@@ -106,5 +112,9 @@ def preference_button(window, pre_dictionary, choice_dic, name):
             if choice.get() == 1:
                 return_dictionary[preference].append(pre_dictionary[preference][i])
             i += 1
-    gL.add_preferences_to_user(name.get(), return_dictionary)
-    start_menu.start_menu_window(window, name)
+    if len(return_dictionary['Genre']) == 0:
+        Need = Label(frame, text='must choose Genre', fg='red', bg="white", font=("Comic Sans MS", 12))
+        Need.grid(row=rowindex + 2, columnspan=7, pady=(5, 5))
+    else:
+        gL.add_preferences_to_user(name.get(), return_dictionary)
+        start_menu.start_menu_window(window, name, fileBackground2)
