@@ -30,7 +30,6 @@ connect to server
         print("Something went wrong: {}".format(err))
 
 
-
 def try_command():
     cmd = """SELECT songs.name 
     FROM artist 
@@ -90,6 +89,7 @@ def get_preferred_genres(user_id):
          return False
     return True
 
+
 def get_user_genres(user_id):
     """
     if there is  users ganres
@@ -107,7 +107,7 @@ def get_user_genres(user_id):
 
 
 
-def get_similar_artist(artist_name):
+def get_similar_and_different_artists_list(artist_name):
     genres = get_genre_by_artist(artist_name)
     artists = list()
     tamp_cmd = """select * from (
@@ -410,6 +410,7 @@ def get_preferred_artists(user_id, game_type):
         artist_info.append(songs)
         artists_list.append(artist_info)
     return artists_list
+
 """
 
 # -------- RATINGS --------
@@ -485,6 +486,7 @@ def get_top_players(game_type):
 
 
 """
+
 if __name__ == '__main__':
     run()
     execute_scripts_from_file("build_tables.sql")
@@ -498,4 +500,8 @@ get artist_songs: (adele songs limit list to 3 - no duplicated song names)
     WHERE artist.name = 'Adele' 
     GROUP BY songs.name 
     limit 3;
+
 """
+
+MOCK_SONGS_LIST = ['test1', 'test2', 'test3']
+MOCK_SONGS_LIST_WITH_NONE_VALS = ['test1', 'test2', None]
