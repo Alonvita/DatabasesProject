@@ -1,60 +1,29 @@
-
+import sys
 import random
 import Queries
 import Conventions
-from View.crash import crash_window
-
-
-TESTING_VIEW = False
-DEBUGGING = False
-DEBUGGING_RAW_DICT = True
-PLAYING_ARTIST_OFF_SET = 0
-
-DEBUGGING_GAME_END = True
-DEBUGGING_QUESTIONS_GENERATING = False
-
-NAME_OFF_SET = 0
-GENDER_OFF_SET = 1
-FROM_OFF_SET = 2
-BIRTH_DATE_OFF_SET = 3
-SONGS_LIST_OFF_SET = 4
-
-NUMBER_OF_ORIGINS = 3
-
-
-GAME_TYPES = [
-    "EASY",
-    "HARD",
-    "CHALLENGING"
-]
-
-QUESTIONS = {
-    "Name": "What was the artist's name",
-    "Genre": "Which of the following was one of the artist's genres?",
-    "Birth_Date": "When was the artist born?",
-    "From": "Where was the artist from?",
-    "Songs": None
-}
-
-
-PREFERENCES_EXIST_STATUS = 1
-PREFERENCES_NON_EXISTING = 0
-USER_DOESNT_EXIST = -1
-ADD_FAILURE = -1
+import DebuggingConventions
 
 
 def login(username, password):
+    """
+    loads the login logic
+
+    :param username:
+    :param password:
+    :return: whether the user exists or not, and if so, whether DB holds his prederences or not
+    """
     user_id = load_user_from_data_base(username, password)
 
-    if user_id == USER_DOESNT_EXIST:
-        return USER_DOESNT_EXIST
+    if user_id == Conventions.USER_DOESNT_EXIST:
+        return Conventions.USER_DOESNT_EXIST
 
     user_preferences = Queries.get_preferred_genres(user_id)
 
     if user_preferences:
-        return PREFERENCES_EXIST_STATUS
+        return Conventions.PREFERENCES_EXIST_STATUS
     else:
-        return PREFERENCES_NON_EXISTING
+        return Conventions.PREFERENCES_NON_EXISTING
 
 
 def register(user_name, password):
@@ -69,44 +38,71 @@ def register(user_name, password):
     add_fail = 0
 
     print("Game logic: " + user_name + " " + password)
-    if Queries.add_user(user_name, password) == ADD_FAILURE:
+    if Queries.add_user(user_name, password) == Conventions.ADD_FAILURE:
         return add_fail
 
     return add_success
 
 
 def add_preferences_to_user(username, properties_dict):
+    """
+    adds a preference to the user in the DB
+
+    :param username:
+    :param properties_dict:
+    :return:
+    """
     user_id = load_user_id_only_by_name(username)
 
-    print(properties_dict)
+    if DebuggingConventions.GENERALLY_DEBUGGING_GAME_LOGIC:
+        print(properties_dict)
     Queries.add_preferences(user_id, properties_dict)
 
 
 def load_user_id_only_by_name(username):
+    """
+    returns the user id from the db by his name
+    :param username:
+    :return:
+    """
     return Queries.get_user_id_by_name(str(username))
 
 
 def load_user_from_data_base(username, password):
+    """
+    loads the user id from database by name and password
+    :param username:
+    :param password:
+    :return:
+    """
     return Queries.get_user_id(str(username), str(password))
 
 
 def calculate_final_score(answers_list, game_dict, game_type):
+    """
+    calcualtes the game final score from the scoring conventions
+    :param answers_list:
+    :param game_dict:
+    :param game_type:
+    :return:
+    """
     final_score = 0
     q_index = 0
 
-    if DEBUGGING_GAME_END:
+    if DebuggingConventions.DEBUGGING_GAME_END:
         print("at 'calculate_final_score'")
 
     for question in game_dict['questions'].values():
-        if DEBUGGING_GAME_END:
+        if DebuggingConventions.DEBUGGING_GAME_END:
             print("\tquestion: {}".format(question))
             print("\tquestion['true']: {}\n\tanswer: {}".format(question['true'],
                                                                 answers_list[q_index]))
 
         if question['true'] == answers_list[q_index]:
-            final_score += POINTS_TO_ADD[game_type]
-            if DEBUGGING_GAME_END:
-                print("Adding {} points on right answer: {}".format(POINTS_TO_ADD[game_type], answers_list[q_index]))
+            final_score += Conventions.POINTS_TO_ADD[game_type]
+            if DebuggingConventions.DEBUGGING_GAME_END:
+                print("Adding {} points on right answer: {}".format(
+                    Conventions.POINTS_TO_ADD[game_type], answers_list[q_index]))
 
         q_index += 1
 
@@ -114,22 +110,32 @@ def calculate_final_score(answers_list, game_dict, game_type):
 
 
 def end(username, answers_list, game_dict, game_type):
-    if DEBUGGING_GAME_END:
+    """
+    takes care of the game end logic: adds the game to the DB
+
+    :param username:
+    :param answers_list:
+    :param game_dict:
+    :param game_type:
+    :return:
+    """
+    if DebuggingConventions.DEBUGGING_GAME_END:
         print("Game ended with the following stats:\n\tusername: {}\n\tanswers_list{}\n\tgame_type: {}".format(username, answers_list, game_type))
 
-    final_score = calculate_final_score(answers_list, game_dict, GAME_TYPES_CODE_FROM_VIEW_TO_STRING[game_type])
+    final_score = calculate_final_score(answers_list, game_dict,
+                                        Conventions.GAME_TYPES_CODE_FROM_VIEW_TO_STRING[game_type])
 
-    if not TESTING_VIEW:
+    if not DebuggingConventions.TESTING_VIEW:
         # get user ID
         user_id = load_user_id_only_by_name(username)
 
         # save the game
-        Queries.add_game(GAME_TYPES_CODE_FROM_VIEW_TO_STRING[game_type], final_score, user_id)
+        Queries.add_game(Conventions.GAME_TYPES_CODE_FROM_VIEW_TO_STRING[game_type], final_score, user_id)
 
         # return final score
         return final_score
     else:
-        return MOCK_GAME_SCORE
+        return Conventions.MOCK_GAME_SCORE
 
 
 def generate_questions(raw_artists_dict, game_type):
@@ -139,23 +145,41 @@ def generate_questions(raw_artists_dict, game_type):
     :return:
     """
     questions_map = {
-        "from": generate_origin_question,
-        "genre": generate_genre_question,
-        "birth_date": generate_birth_date_question,
-        "similar": generate_similar_artists_question,
-        "name": generate_name_question
+        Conventions.FROM: generate_origin_question,
+        Conventions.GENRE: generate_genre_question,
+        Conventions.BIRTH_DATE: generate_birth_date_question,
+        Conventions.SIMILAR: generate_similar_artists_question,
+        Conventions.NAME: generate_name_question
     }
 
-    questions = [questions_map['from'](raw_artists_dict),
-                 questions_map['genre'](raw_artists_dict),
-                 questions_map['birth_date'](raw_artists_dict),
-                 questions_map['similar'](raw_artists_dict)
+    # add questions
+    questions = [questions_map[Conventions.FROM](raw_artists_dict),
+                 questions_map[Conventions.GENRE](raw_artists_dict),
+                 questions_map[Conventions.BIRTH_DATE](raw_artists_dict),
+                 questions_map[Conventions.SIMILAR](raw_artists_dict)
                  ]
+
+    # add songs questions
+    songs_questions = generate_songs_questions(raw_artists_dict)
+
+    if DebuggingConventions.DEBUGGING_SONGS_LIST_CREATION:
+        for songs_question in songs_questions:
+            print("Song question generated is: {}".format(songs_question))
+
+    for song_question in songs_questions:
+        questions.append(song_question)
+
+    if DebuggingConventions.DEBUGGING_SONGS_LIST_CREATION:
+        print("final_dict_after_songs_list is")
+        for question in questions:
+            print("\t{}".format(question))
+
     random.shuffle(questions)  # shuffle
 
     # add the artist name question as first question for a hard game
     if game_type == Conventions.HARD_GAME_CODE:
-        questions.insert(0, questions_map['name'](raw_artists_dict))
+        questions.insert(Conventions.LIST_BEGINNING_OFF_SET,
+                         questions_map[Conventions.NAME](raw_artists_dict))
 
     build_questions_dict_for_view(questions)
 
@@ -163,10 +187,49 @@ def generate_questions(raw_artists_dict, game_type):
     return build_questions_dict_for_view(questions)
 
 
+def generate_songs_questions(raw_artists_dict):
+    """
+    generates the songs questions from the given raw_artists_dict
+    :param raw_artists_dict:
+    :return:
+    """
+    if DebuggingConventions.DEBUGGING_SONGS_LIST_CREATION:
+        print("---- AT SONGS QUESTIONS LIST CREATION ----")
+
+    out_questions_list = []
+
+    # check the minimal songs list size
+    min_songs_list_size = get_minimal_songs_list_size(raw_artists_dict)
+
+    question_text = Conventions.QUESTIONS_STRINGS_DICT[Conventions.QUESTIONS_DICT_SONGS]
+
+    for index in range(min_songs_list_size):
+        # load all the songs for this index
+        answers = [artist[Conventions.SONGS_LIST_OFF_SET][index] for artist in
+                   raw_artists_dict[Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET]]
+        # get the right answer
+        right_answer = answers[Conventions.LIST_BEGINNING_OFF_SET]
+
+        # append the built question to the questions dict
+        out_questions_list.append(build_question_dict(question_text, answers, right_answer))
+
+    return out_questions_list
+
+
 def generate_name_question(raw_artists_dict):
+    """
+    generates the name question for the playing artist, given the raw_artists_dict
+
+    :param raw_artists_dict:
+    :return:
+    """
     question_text = "What is the artist that you are playing on?"
-    answers = [artist[NAME_OFF_SET] for artist in raw_artists_dict['Artist']]  # append all artists names
-    right_answer = raw_artists_dict['Artist'][PLAYING_ARTIST_OFF_SET][NAME_OFF_SET]
+    answers = [artist[Conventions.NAME_OFF_SET] for artist in
+               raw_artists_dict[Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET]]  # append all artists names
+    right_answer = load_offset_from_raw_artists_dict(raw_artists_dict,
+                                                     Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET,
+                                                     Conventions.PLAYING_ARTIST_OFF_SET,
+                                                     Conventions.NAME_OFF_SET)
 
     return build_question_dict(question_text, answers, right_answer)
 
@@ -180,33 +243,34 @@ def build_questions_dict_for_view(questions_list):
     """
     questions_dict = dict()
 
-    if DEBUGGING_QUESTIONS_GENERATING:
+    if DebuggingConventions.DEBUGGING_QUESTIONS_GENERATING:
         print("Questions list is:\n{}".format(questions_list))
 
     for question in questions_list:
         # insert question if it is not None
         if question:
-            question_name = question['text']
+            question_name = question[Conventions.QUESTION_NAME_OFFSET]
 
-            if DEBUGGING_QUESTIONS_GENERATING:
+            if DebuggingConventions.DEBUGGING_QUESTIONS_GENERATING:
                 print("Question name to add is: {}".format(question_name))
 
             questions_dict[question_name] = question
 
-    if DEBUGGING_QUESTIONS_GENERATING:
+    if DebuggingConventions.DEBUGGING_QUESTIONS_GENERATING:
         print("Questions dict build:\n{}".format(questions_dict))
 
     return questions_dict
 
 
-def valid_songs_list_received(songs_list):
-    pass
-
-
 def none_values_exist_in_answer_list(answers_list):
+    """
+    check if answers list holds None values
+    :param answers_list:
+    :return:
+    """
     for answer in answers_list:
         if answer is None:
-            if DEBUGGING_QUESTIONS_GENERATING:
+            if DebuggingConventions.DEBUGGING_QUESTIONS_GENERATING:
                 print("answers list holds None values:{}".format(answers_list))
             return True
 
@@ -214,19 +278,28 @@ def none_values_exist_in_answer_list(answers_list):
 
 
 def answers_list_empty_or_holds_less_than_three_values(answers_list):
+    """
+    checks if the answers list is empty or holds less than three values
+    :param answers_list:
+    :return:
+    """
     if answers_list == Conventions.EMPTY_ANSWERS_LIST_CODE or \
            len(answers_list) != Conventions.VALID_ANSWERS_LIST_SIZE:
-        if DEBUGGING_QUESTIONS_GENERATING:
+        if DebuggingConventions.DEBUGGING_QUESTIONS_GENERATING:
             print("answers list is in wrong size of empty:{}".format(answers_list))
         return None
 
 
 def generate_random_list_of_origins():
-    list_of_origins = LIST_OF_ORIGINS.copy()
+    """
+    generates the random list of origins
+    :return:
+    """
+    list_of_origins = Conventions.LIST_OF_ORIGINS.copy()
 
     origins_list_to_return = list()
 
-    for number_of_origins_to_add in range(NUMBER_OF_ORIGINS):
+    for number_of_origins_to_add in range(Conventions.NUMBER_OF_ORIGINS):
         # get a random origin
         rand_origin = random.choice(list_of_origins)
 
@@ -240,10 +313,19 @@ def generate_random_list_of_origins():
 
 
 def generate_origin_question(raw_artists_dict):
-    question_text = "Where is the artist from?"  # text
+    """
+    generates the origin question
+
+    :param raw_artists_dict:
+    :return:
+    """
+    question_text = Conventions.QUESTIONS_STRINGS_DICT[Conventions.QUESTIONS_DICT_FROM]
     # generate a random list of origins and add the right answer
     answers = generate_random_list_of_origins()
-    answers.append(raw_artists_dict['Artist'][PLAYING_ARTIST_OFF_SET][FROM_OFF_SET])
+    answers.append(load_offset_from_raw_artists_dict(raw_artists_dict,
+                                                     Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET,
+                                                     Conventions.PLAYING_ARTIST_OFF_SET,
+                                                     Conventions.FROM_OFF_SET))
 
     if none_values_exist_in_answer_list(answers):
         return None
@@ -251,14 +333,21 @@ def generate_origin_question(raw_artists_dict):
     if answers_list_empty_or_holds_less_than_three_values(answers):
         return None
 
-    right_answer = raw_artists_dict['Artist'][PLAYING_ARTIST_OFF_SET][FROM_OFF_SET]  # the origin of the playing artist
+    right_answer = raw_artists_dict[Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET][Conventions.PLAYING_ARTIST_OFF_SET][Conventions.FROM_OFF_SET]  # the origin of the playing artist
 
     return build_question_dict(question_text, answers, right_answer)
 
 
 def generate_birth_date_question(raw_artists_dict):
-    question_text = "What is the artist's birth date?"
-    answers = [artist[BIRTH_DATE_OFF_SET] for artist in raw_artists_dict['Artist']]
+    """
+    generates the birth date question
+
+    :param raw_artists_dict:
+    :return:
+    """
+    question_text = Conventions.QUESTIONS_STRINGS_DICT[Conventions.QUESTIONS_DICT_BIRTH_DATE]
+    answers = [artist[Conventions.BIRTH_DATE_OFF_SET] for artist in
+               raw_artists_dict[Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET]]
 
     if none_values_exist_in_answer_list(answers):
         return None
@@ -266,17 +355,23 @@ def generate_birth_date_question(raw_artists_dict):
     if answers_list_empty_or_holds_less_than_three_values(answers):
         return None
 
-    right_answer = answers[0]
+    right_answer = answers[Conventions.LIST_BEGINNING_OFF_SET]
 
     return build_question_dict(question_text, answers, right_answer)
 
 
 def generate_genre_question(raw_artists_dict):
+    """
+    generates the genre question
+
+    :param raw_artists_dict:
+    :return:
+    """
     list_of_lists_of_genres = list()
 
-    for artist in raw_artists_dict['Artist']:
+    for artist in raw_artists_dict[Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET]:
         # appends a LIST of genres per artist name
-        list_of_lists_of_genres.append(Queries.get_genre_by_artist(artist[NAME_OFF_SET]))
+        list_of_lists_of_genres.append(Queries.get_genre_by_artist(artist[Conventions.NAME_OFF_SET]))
 
     genres_for_question = list()
 
@@ -291,15 +386,23 @@ def generate_genre_question(raw_artists_dict):
     if answers_list_empty_or_holds_less_than_three_values(genres_for_question):
         return None
 
-    question_text = "What is the artist's genre?"
-    right_answer = genres_for_question[0]
+    question_text = Conventions.QUESTIONS_STRINGS_DICT[Conventions.QUESTIONS_DICT_GENRE]
+    right_answer = genres_for_question[Conventions.LIST_BEGINNING_OFF_SET]
 
     return build_question_dict(question_text, genres_for_question, right_answer)
 
 
 def generate_similar_artists_question(raw_artists_dict):
+    """
+    generates the similar artists question
+    :param raw_artists_dict:
+    :return:
+    """
     # artist name
-    artist_name = raw_artists_dict['Artist'][PLAYING_ARTIST_OFF_SET][NAME_OFF_SET]
+    artist_name = load_offset_from_raw_artists_dict(raw_artists_dict,
+                                                    Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET,
+                                                    Conventions.PLAYING_ARTIST_OFF_SET,
+                                                    Conventions.NAME_OFF_SET)
 
     question_text = "Who is the most similar artist to this artist?"
 
@@ -323,6 +426,13 @@ def generate_similar_artists_question(raw_artists_dict):
 
 
 def build_question_dict(text, answers, right_answer):
+    """
+    turns question text, answers and right_answer into a question dictionary
+    :param text:
+    :param answers:
+    :param right_answer:
+    :return:
+    """
     return {
         "text": text,
         "answers": answers,
@@ -331,13 +441,22 @@ def build_question_dict(text, answers, right_answer):
 
 
 def get_all_preferences():
+    """
+    load all preferences for user
+
+    :return:
+    """
     return Queries.get_all_genres()
 
 
 def get_leader_board():
+    """
+    loads the leader boards
+    :return:
+    """
     leader_board = dict()
 
-    for game_type in GAME_TYPES:
+    for game_type in Conventions.GAME_TYPES:
         leader_board[game_type] = list()
         leader_board[game_type].append(['Player name', 'Score'])
 
@@ -352,239 +471,203 @@ def get_leader_board():
 
     return leader_board
 
-    # FORMAT:
-    # {
-    #     "EASY": [['Player name', 'score'], ['baba', 100], ['gaga', 98], ['jaja', 90]],
-    #     "HARD": [['Player name', 'score'], ['nana', 100], ['mama', 96], ['haha', 95]],
-    #     "CHALLENGING": [['Player name', 'score'], ['lala', 99], ['tata', 95], ['rara', 90]]
-    # }
-
 
 def start(username, game_type):
     """
+    handles the start game logic
+
     :param username:
     :param game_type:
     :return:
     """
 
-    if DEBUGGING:
+    if DebuggingConventions.GENERALLY_DEBUGGING_GAME_LOGIC:
         print("The game type received is: {}".format(game_type))
 
     # create a game depending on the game_type
     if game_type == Conventions.EASY_GAME_CODE or game_type == Conventions.HARD_GAME_CODE:
-        if DEBUGGING:
+        if DebuggingConventions.GENERALLY_DEBUGGING_GAME_LOGIC:
             print("Creating an easy game!")
         return generate_easy_or_hard_games(username, game_type)
 
     return generate_challenging_game(username, game_type)
 
 
-def raw_artists_dict_is_valid(raw_artists_dict):
+def get_minimal_songs_list_size(raw_artists_dict):
+    """
+    returns the minimal songs list size for this raw_artists_dict
+    :param raw_artists_dict:
+    :return:
+    """
+    min_songs_list_size = sys.maxsize
+
     # check songs list length == 3
-    for artist in raw_artists_dict['Artist']:
-        if DEBUGGING_RAW_DICT:
-            print("Checking artist: {}\n\tsongs list: {}".format(artist, artist[SONGS_LIST_OFF_SET]))
+    for artist in raw_artists_dict[Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET]:
+        if DebuggingConventions.DEBUGGING_RAW_DICT:
+            print("Checking artist: {}\n\tsongs list: {}".format(artist, artist[Conventions.SONGS_LIST_OFF_SET]))
 
+        # songs list of this artist is empty -> return 0
         if len(artist) != 5:
-            if DEBUGGING_RAW_DICT:
+            if DebuggingConventions.DEBUGGING_RAW_DICT:
                 print("Error in artist length: {}".format(len(artist)))
-            return False
+            return Conventions.ZERO
 
-        if len(artist[SONGS_LIST_OFF_SET]) < Conventions.VALID_SONGS_ANSWERS_LIST_SIZE:
-            if DEBUGGING_RAW_DICT:
-                print("Error in songs list length: {}".format(len(artist[SONGS_LIST_OFF_SET])))
-            return False
+        # check if this songs list's length is smaller than the smallest
+        if len(artist[Conventions.SONGS_LIST_OFF_SET]) < min_songs_list_size:
+            if DebuggingConventions.DEBUGGING_RAW_DICT:
+                print("Error in songs list length: {}".format(len(artist[Conventions.SONGS_LIST_OFF_SET])))
+            # if so -> update smallest size
+            min_songs_list_size = len(artist[Conventions.SONGS_LIST_OFF_SET])
 
-    # TODO: check if need to do some more tests over artist
+    return min_songs_list_size
 
 
-def check_raw_artists_dict(user_id, game_type, raw_artists_dict):
-    dict_to_check = raw_artists_dict
+def song_name_str(song_name, index):
+    """
+    returns the defined song name str + index + the song name
 
-    # check dict
-    while not raw_artists_dict_is_valid(dict_to_check):
-        if DEBUGGING_RAW_DICT:
-            print("Checking dict: {}".format(dict_to_check))
-        # if dict is not valid, generate a new dict from DB
-        dict_to_check = Queries.get_preferred_artists(user_id, game_type)
-
-    return dict_to_check
+    :param song_name:
+    :param index:
+    :return: the defined song text + index for song name
+    """
+    return Conventions.SONG_NAME_STR + str(index) + ": " + song_name
 
 
 def generate_challenging_game(user_name, game_type):
+    """
+    Generates the challenging game dictionary for the view
+
+    :param user_name:
+    :param game_type:
+    :return:
+    """
+
     user_id = load_user_id_only_by_name(user_name)  # generate user ID
 
     raw_artists_dict = Queries.get_preferred_artists(user_id, game_type)  # generate raw artists dict
 
-    # check the dict
-    raw_artists_dict = check_raw_artists_dict(user_id, game_type, raw_artists_dict)
-
     # generate artists list
-    artists_list = [artist[NAME_OFF_SET] for artist in raw_artists_dict['Artist']]
+    artists_list = [artist[Conventions.NAME_OFF_SET] for artist in
+                    raw_artists_dict[Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET]]
 
     # generate the properties list
     properties_list_for_each_artist = list()
 
-    for artist in raw_artists_dict['Artist']:
+    for artist in raw_artists_dict[Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET]:
         # create a list per artist
-        list_for_artist = list()
-
+        properties_list_for_artist = list()
+        
         # append relevant information
-        list_for_artist.append(artist[PLAYING_ARTIST_OFF_SET][FROM_OFF_SET])  # from
-        list_for_artist.append(artist[PLAYING_ARTIST_OFF_SET][BIRTH_DATE_OFF_SET])  # birth date
+        properties_list_for_artist.append(Conventions.ORIGINS_STR +
+                                          load_offset_from_raw_artists_dict(
+                                              artist,
+                                              Conventions.PLAYING_ARTIST_OFF_SET,
+                                              Conventions.FROM_OFF_SET))  # from
+        properties_list_for_artist.append(Conventions.BIRTH_DATE_STR +
+                                          load_offset_from_raw_artists_dict(
+                                              artist,
+                                              Conventions.PLAYING_ARTIST_OFF_SET,
+                                              Conventions.BIRTH_DATE_OFF_SET))  # birth day
 
-        for song in artist[SONGS_LIST_OFF_SET]:
-            list_for_artist.append(song)  # append all songs
+        generate_songs_list(raw_artists_dict, properties_list_for_artist)
 
-        properties_list_for_each_artist.append(list_for_artist)
+        properties_list_for_each_artist.append(properties_list_for_artist)
 
-    if not TESTING_VIEW:
+    if not DebuggingConventions.TESTING_VIEW:
         return {
-            "artist_name": artists_list,
-            "properties": properties_list_for_each_artist,
-            "questions": generate_questions(raw_artists_dict, game_type)
+            Conventions.ARTIST_NAME: artists_list,
+            Conventions.PROPERTIES: properties_list_for_each_artist,
+            Conventions.QUESTIONS: generate_questions(raw_artists_dict, game_type)
         }
     else:
-        return MOCK_CHALLENGING_DICT
+        return DebuggingConventions.MOCK_CHALLENGING_DICT
+
+
+def generate_songs_list(raw_artists_dict, out_list):
+    """
+    uses the raw_artists_dict to generate the list of songs for the out_list
+
+    :param raw_artists_dict:
+    :param out_list:
+    :return:
+    """
+    songs_list = load_offset_from_raw_artists_dict(raw_artists_dict,
+                                                   Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET,
+                                                   Conventions.PLAYING_ARTIST_OFF_SET,
+                                                   Conventions.SONGS_LIST_OFF_SET)
+
+    # append the songs_list to the properties list. appends an empty list if there are no songs for the artist
+    if songs_list is []:
+        out_list.append(Conventions.EMPTY_SONGS_LIST_STR)
+    else:
+        index = 1
+
+        for song in songs_list:
+            out_list.append(song_name_str(song, index))
+            index += 1
 
 
 def generate_easy_or_hard_games(user_name, game_type):
+    """
+    generates the easy and hard games dict
+    :param user_name:
+    :param game_type:
+    :return:
+    """
     user_id = load_user_id_only_by_name(user_name)  # generate user ID
 
     raw_artists_dict = Queries.get_preferred_artists(user_id, game_type)  # generate raw artists dict
 
-    # check the dict
-    raw_artists_dict = check_raw_artists_dict(user_id, game_type, raw_artists_dict)
-
-    if DEBUGGING:
+    if DebuggingConventions.GENERALLY_DEBUGGING_GAME_LOGIC:
         print(raw_artists_dict)
-    '''
-    format:
-        { 'Artist':
-            ["artist_name", "gender", "from", "birth_date", [songs_list]] <- artist played on
-            ["artist_name", "gender", "from", "birth_date", [songs_list]] <- wrong answers
-            ...
-        }
-    '''
 
     # generate the properties list
     properties = list()
-    properties.append(raw_artists_dict['Artist'][PLAYING_ARTIST_OFF_SET][FROM_OFF_SET])  # from
-    properties.append(raw_artists_dict['Artist'][PLAYING_ARTIST_OFF_SET][BIRTH_DATE_OFF_SET])  # birth date
+    properties.append(Conventions.ORIGINS_STR +
+                      load_offset_from_raw_artists_dict(raw_artists_dict,
+                                                        Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET,
+                                                        Conventions.PLAYING_ARTIST_OFF_SET,
+                                                        Conventions.FROM_OFF_SET))
 
-    # append all the songs of the artist as properties
-    for song in raw_artists_dict['Artist'][PLAYING_ARTIST_OFF_SET][SONGS_LIST_OFF_SET]:
-        properties.append(song)
+    properties.append(Conventions.BIRTH_DATE_STR +
+                      load_offset_from_raw_artists_dict(raw_artists_dict,
+                                                        Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET,
+                                                        Conventions.PLAYING_ARTIST_OFF_SET,
+                                                        Conventions.BIRTH_DATE_OFF_SET))
 
-    if not TESTING_VIEW:
+    generate_songs_list(raw_artists_dict, properties)
+
+    if not DebuggingConventions.TESTING_VIEW:
         return {
-            "artist_name": raw_artists_dict['Artist'][PLAYING_ARTIST_OFF_SET][NAME_OFF_SET],
-            "properties": properties,
-            "questions": generate_questions(raw_artists_dict, game_type)
+            Conventions.ARTIST_NAME: load_offset_from_raw_artists_dict(raw_artists_dict,
+                                                                       Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET,
+                                                                       Conventions.PLAYING_ARTIST_OFF_SET,
+                                                                       Conventions.NAME_OFF_SET),
+            Conventions.PROPERTIES: properties,
+            Conventions.QUESTIONS: generate_questions(raw_artists_dict, game_type)
         }
     else:
-        return MOCK_DICT
+        return DebuggingConventions.MOCK_DICT
 
 
-MOCK_DICT = {
-        "artist_name": "Adel",
-        "properties": ["Country: UK", "Date: 12.12.1980", "Song1: Alon kaka", "Song2: Sara kaka", "Song3: Yana kaka"],
-        "questions": {
-            "q1": {
-                "text": "Country?",
-                "answers": ["Israel", "USA", "Poland", "UK"],
-                "true": "UK"
-            },
-            "q2": {
-                "text": "Date?",
-                "answers": ["12.12.1984", "12.12.1979", "12.12.1980", "12.12.1981"],
-                "true": "12.12.1980"
-            },
-            "q3": {
-                "text": "Song1?",
-                "answers": ["song1_a1", "song1_a2", "song1_a3", "Alon kaka"],
-                "true": "right_answer"
-            },
-            "q4": {
-                "text": "Song2?",
-                "answers": ["song2_a1", "song2_a2", "Sara kaka", "song2_a3"],
-                "true": "right_answer"
-            },
-            "q5": {
-                "text": "Song3?",
-                "answers": ["Yana kaka", "song3_a1", "song3_a2", "song3_a3"],
-                "true": "Yana kaka"
-            }
-        }
-    }
+def load_offset_from_raw_artists_dict(raw_artists_dict, offset_one, offset_two=None, offset_three=None):
+    """
+    return the raw_artists_dict offset, depending on how many were given
+    :param raw_artists_dict:
+    :param offset_one:
+    :param offset_two:
+    :param offset_three:
+    :return:
+    """
+    if offset_two is not None:
+        if offset_three is not None:
+            if DebuggingConventions.DEBUGGING_RAW_DICT_ACCESS:
+                print("raw_artists_dict will return: {}".format(raw_artists_dict[offset_one][offset_two][offset_three]))
+            return raw_artists_dict[offset_one][offset_two][offset_three]
+        if DebuggingConventions.DEBUGGING_RAW_DICT_ACCESS:
+            print("raw_artists_dict will return: {}".format(raw_artists_dict[offset_one][offset_two]))
+        return raw_artists_dict[offset_one][offset_two]
 
-
-MOCK_CHALLENGING_DICT = GameInfoDict = {
-        "artist_name": ["Adel", "Adel2", "Adel3", "Ade4", "Adel5"],
-        "properties": [["Country: UK", "Date: 12.12.1980", "Song1: Alon kaka", "Song2: Sara kaka", "Song3: Yana kaka"], ["Country1: UK", "Date1: 12.12.1980", "Song11: Alon kaka", "Song12: Sara kaka", "Song13: Yana kaka"], ["Country2: UK", "Date2: 12.12.1980", "Song21: Alon kaka", "Song22: Sara kaka", "Song23: Yana kaka"], ["Country3: UK", "Date3: 12.12.1980", "Song31: Alon kaka", "Song32: Sara kaka", "Song33: Yana kaka"], ["Country4: UK", "Date4: 12.12.1980", "Song41: Alon kaka", "Song42: Sara kaka", "Song43: Yana kaka"]],
-        "questions": {
-            "q1": {
-                "text": "Country?",
-                "answers": ["Israel", "USA", "Poland", "UK"],
-                "true": "UK"
-            },
-            "q2": {
-                "text": "Date?",
-                "answers": ["12.12.1984", "12.12.1979", "12.12.1980", "12.12.1981"],
-                "true": "12.12.1980"
-            },
-            "q3": {
-                "text": "Song1?",
-                "answers": ["song1_a1", "song1_a2", "song1_a3", "Alon kaka"],
-                "true": "right_answer"
-            },
-            "q4": {
-                "text": "Song2?",
-                "answers": ["song2_a1", "song2_a2", "Sara kaka", "song2_a3"],
-                "true": "right_answer"
-            },
-            "q5": {
-                "text": "Song3?",
-                "answers": ["Yana kaka", "song3_a1", "song3_a2", "song3_a3"],
-                "true": "Yana kaka"
-            }
-        }
-    }
-
-MOCK_GAME_SCORE = 1200
-
-LIST_OF_ORIGINS = [
-        "Israel",
-        "Turkey",
-        "Gibraltar",
-        "Côte d'Ivoire",
-        "Bosnia and Herzegovina",
-        "Colombia",
-        "Bulgaria",
-        "Morocco",
-        "Poland",
-        "Russian Federation",
-        "Guinea",
-        "Marshall Islands",
-        "Brunei Darussala",
-        "Ireland",
-        "Albania",
-        "Finland",
-        "Sweden",
-        "Martinique",
-        "Lithuania",
-        "Benin",
-        "Bangladesh"
-    ]
-
-POINTS_TO_ADD = {
-    Conventions.EASY_GAME_CODE: 50,
-    Conventions.HARD_GAME_CODE: 70,
-    Conventions.CHALLENGING_GAME_CODE: 50
-}
-
-GAME_TYPES_CODE_FROM_VIEW_TO_STRING = {
-    1: Conventions.EASY_GAME_CODE,
-    2: Conventions.HARD_GAME_CODE,
-    3: Conventions.CHALLENGING_GAME_CODE
-}
+    if DebuggingConventions.DEBUGGING_RAW_DICT_ACCESS:
+        print("raw_artists_dict will return: {}".format(raw_artists_dict[offset_one]))
+    return raw_artists_dict[offset_one]

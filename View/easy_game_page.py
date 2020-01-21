@@ -73,10 +73,12 @@ def easy_game_window(window, Gamer_name):
 
 def showAttribute(Gamer_name, window, frame, GameInfoDict, i):
     list = frame.grid_slaves()
+
     for l in list:
         l.destroy()
     frame = Frame(window)
     frame.grid(row=1, column=1)
+
     for j in range(17):
         for k in range(17):
             message = Label(frame, text="")
