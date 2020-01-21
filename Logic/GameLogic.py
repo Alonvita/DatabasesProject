@@ -473,6 +473,8 @@ def generate_similar_artists_question(raw_artists_dict, game_type=None):
     # generate similar artist by randomly picking a genre of similarity
     similar_artists_list = Queries.get_similar_and_different_artists_list(artist_name)
 
+    similar_artists_list = [artist[0] for artist in similar_artists_list]
+
     # check None values
     if none_values_exist_in_answer_list(similar_artists_list):
         return None
@@ -655,10 +657,13 @@ def generate_songs_list(raw_artists_dict, out_list):
     :param out_list:
     :return:
     """
-    songs_list = load_offset_from_raw_artists_dict(raw_artists_dict,
-                                                   Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET,
-                                                   Conventions.PLAYING_ARTIST_OFF_SET,
-                                                   Conventions.SONGS_LIST_OFF_SET)
+    if get_minimal_songs_list_size(raw_artists_dict) == Conventions.ZERO:
+        songs_list = []
+    else:
+        songs_list = load_offset_from_raw_artists_dict(raw_artists_dict,
+                                                       Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET,
+                                                       Conventions.PLAYING_ARTIST_OFF_SET,
+                                                       Conventions.SONGS_LIST_OFF_SET)
 
     # append the songs_list to the properties list. appends an empty list if there are no songs for the artist
     if songs_list is []:
@@ -743,7 +748,7 @@ def add_artist_name_to_challenging_question(artist_name):
     :param artist_name:
     :return:
     """
-    return "(on artist: " + artist_name + ")"
+    return " (on artist: " + artist_name + ")"
 
 
 def pick_a_random_number_from_zero_to(num):
