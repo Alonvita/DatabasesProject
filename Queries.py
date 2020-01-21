@@ -1,16 +1,16 @@
-import threading
-
+# QUERIES
+import random
 import Conventions
 import mysql.connector
-from sqlite3 import OperationalError
-
 from Server import Server
 
 mydb = None
 mycursor = None
 settings_info = None
-DEBUGGING = True
-USE_MOCK_DB = False
+DEBUGGING = False
+USE_MOCK_DB = True
+CHOOSE_RANDOM_SONGS_LIST = False
+DEBUGGING_EMPTY_SONGS_LIST = False
 
 sql_server = Server()
 
@@ -151,7 +151,6 @@ def add_preferences(user_id, genres_list):  # todo: change only to genre
     :param genres_list:
     :return
     """
-    print("ganre list, add pref:", genres_list)
     if len(genres_list) != 0:
         for pref in genres_list["Genre"]:
             insert_pref = """INSERT INTO """ + sql_server.settings_info["database"] + """.users_preferences(user_id,type,preference) VALUES(""" + str(
@@ -293,7 +292,10 @@ def get_songs(artist_name):
                 -1 if no songs, else return the list
     """
     if USE_MOCK_DB:
-        return MOCK_SONGS_LIST
+        if CHOOSE_RANDOM_SONGS_LIST:
+            return MOCK_SONGS_LIST_LIST[random.randint(Conventions.ZERO, len(MOCK_SONGS_LIST_LIST) - 1)]
+        else:
+            return MOCK_SONGS_LIST_1 if not DEBUGGING_EMPTY_SONGS_LIST else MOCK_FOR_EMPTY_SONGS_LIST
 
     command = """SELECT songs.name FROM artist JOIN artist_to_credit ON artist_to_credit.artist = artist.id 
     JOIN songs ON songs.artist_credit = artist_to_credit.artist 
@@ -384,9 +386,7 @@ def get_preferred_artists(user_id, game_type):
 
     # if their is less artist then needed, add more artist to user study and make query again
     if (len(artists_list) < 5 and game_type == Conventions.CHALLENGING_GAME_CODE) or (len(artists_list) < 4):
-        prf = dict()
-        prf["Genre"] = get_user_genres(user_id)
-        add_preferences(user_id, prf)
+        add_preferences(user_id, get_user_genres(user_id))
         return get_preferred_artists(user_id, game_type)
 
     preferred_artists = dict()
@@ -413,6 +413,7 @@ def get_preferred_artists(user_id, game_type):
         artist_info.append(songs)
         artists_list.append(artist_info)
     return artists_list
+
 """
 
 # -------- RATINGS --------
@@ -488,6 +489,7 @@ def get_top_players(game_type):
 
 
 """
+
 if __name__ == '__main__':
     run()
     execute_scripts_from_file("build_tables.sql")
@@ -501,7 +503,16 @@ get artist_songs: (adele songs limit list to 3 - no duplicated song names)
     WHERE artist.name = 'Adele' 
     GROUP BY songs.name 
     limit 3;
+
 """
 
-MOCK_SONGS_LIST = ['test1', 'test2', 'test3']
+
+MOCK_SONGS_LIST_1 = ['test1', 'test2', 'test3']
+MOCK_FOR_EMPTY_SONGS_LIST = []
+MOCK_SONGS_LIST_3 = ['test4', 'test5']
 MOCK_SONGS_LIST_WITH_NONE_VALS = ['test1', 'test2', None]
+
+MOCK_SONGS_LIST_LIST = [
+    MOCK_SONGS_LIST_1,
+    MOCK_SONGS_LIST_3
+]
