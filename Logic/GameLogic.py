@@ -627,6 +627,8 @@ def generate_challenging_game(user_name, game_type):
     # generate the properties list
     properties_list_for_each_artist = list()
 
+    index = 0
+
     for artist in raw_artists_dict[Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET]:
         if DebuggingConventions.DEBUGGING_CHALLENGING_GAME:
             print("artist is: {}\n\tfrom: {}\n\tborn on: {}".format(artist,
@@ -644,7 +646,9 @@ def generate_challenging_game(user_name, game_type):
                                           load_offset_from_raw_artists_dict(
                                               artist, Conventions.BIRTH_DATE_OFF_SET))  # birth day
 
-        generate_songs_list(raw_artists_dict, properties_list_for_artist)
+        # generate the songs list for this artist
+        generate_songs_list(raw_artists_dict, properties_list_for_artist, index)
+        index +=1
 
         if DebuggingConventions.DEBUGGING_CHALLENGING_GAME:
             print("Created properties list for: {}".format(artist[Conventions.NAME_OFF_SET]))
@@ -663,7 +667,7 @@ def generate_challenging_game(user_name, game_type):
         return DebuggingConventions.MOCK_CHALLENGING_DICT
 
 
-def generate_songs_list(raw_artists_dict, out_list):
+def generate_songs_list(raw_artists_dict, out_list, artist_index):
     """
     uses the raw_artists_dict to generate the list of songs for the out_list
 
@@ -676,7 +680,7 @@ def generate_songs_list(raw_artists_dict, out_list):
     else:
         songs_list = load_offset_from_raw_artists_dict(raw_artists_dict,
                                                        Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET,
-                                                       Conventions.PLAYING_ARTIST_OFF_SET,
+                                                       artist_index,
                                                        Conventions.SONGS_LIST_OFF_SET)
 
     # append the songs_list to the properties list. appends an empty list if there are no songs for the artist
@@ -718,7 +722,7 @@ def generate_easy_or_hard_games(user_name, game_type):
                                                         Conventions.PLAYING_ARTIST_OFF_SET,
                                                         Conventions.BIRTH_DATE_OFF_SET))
 
-    generate_songs_list(raw_artists_dict, properties)
+    generate_songs_list(raw_artists_dict, properties, Conventions.PLAYING_ARTIST_OFF_SET)
 
     if not DebuggingConventions.TESTING_VIEW:
         return {
