@@ -213,10 +213,24 @@ def generate_songs_questions(raw_artists_dict, game_type=None):
                                               Conventions.NAME_OFF_SET)
         )
 
+    answers = []
+
+    # build a song list for each index
     for index in range(min_songs_list_size):
-        # load all the songs for this index
-        answers = [artist[Conventions.SONGS_LIST_OFF_SET][index] for artist in
-                   raw_artists_dict[Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET]]
+        answers = []
+
+        # take the song at the [index] location from each artist
+        for artist in raw_artists_dict[Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET]:
+            song_to_add = artist[Conventions.SONGS_LIST_OFF_SET][index]
+
+            answers.append(song_to_add)
+
+            if DebuggingConventions.DEBUGGING_SONGS_LIST_CREATION:
+                print("Song to add is: {} from artist: {}".format(song_to_add, artist[Conventions.NAME_OFF_SET]))
+
+        if DebuggingConventions.DEBUGGING_SONGS_LIST_CREATION:
+            print("Songs list is: {}".format(answers))
+
         # get the right answer
         right_answer = answers[artist_to_play_on]
 
