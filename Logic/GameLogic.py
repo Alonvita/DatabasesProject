@@ -782,7 +782,7 @@ def pick_artist_to_play_on(raw_artists_dict, game_type):
         if game_type == Conventions.CHALLENGING_GAME_CODE:
             # generate a random number to play on
             artist_to_play_on = pick_a_random_number_from_zero_to(
-                len(raw_artists_dict[Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET] - 1))
+                len(raw_artists_dict[Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET]) - 1)
         else:
             artist_to_play_on = Conventions.ZERO
 
