@@ -2,6 +2,7 @@ from tkinter import *
 from View import game_manu, leaderboard_page
 
 
+# start menu window
 def start_menu_window(window, Gamer_name, fileBackground2):
     for widget in window.winfo_children():
         widget.destroy()
@@ -25,10 +26,12 @@ def start_menu_window(window, Gamer_name, fileBackground2):
     bottonHard.grid(row=2, column=0, pady=(10, 5))
 
 
+# go to start menu
 def start(window, Gamer_name, fileBackground2):
     game_manu.game_menu_window(window, Gamer_name, fileBackground2)
 
 
+# go to leader board page
 def leaderboard(window, Gamer_name, fileBackground2):
     leaderboard_page.leaderboard_window(window, Gamer_name, fileBackground2)
 
