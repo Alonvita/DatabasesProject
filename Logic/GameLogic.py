@@ -179,7 +179,7 @@ def generate_questions(raw_artists_dict, game_type):
     # add the artist name question as first question for a hard game
     if game_type == Conventions.HARD_GAME_CODE:
         questions.insert(Conventions.LIST_BEGINNING_OFF_SET,
-                         questions_map[Conventions.NAME](raw_artists_dict))
+                         questions_map[Conventions.NAME](raw_artists_dict, game_type))
 
     build_questions_dict_for_view(questions)
 
@@ -649,7 +649,7 @@ def generate_challenging_game(user_name, game_type):
 
         # generate the songs list for this artist
         generate_songs_list(raw_artists_dict, properties_list_for_artist, index)
-        index +=1
+        index += 1
 
         if DebuggingConventions.DEBUGGING_CHALLENGING_GAME:
             print("Created properties list for: {}".format(artist[Conventions.NAME_OFF_SET]))
