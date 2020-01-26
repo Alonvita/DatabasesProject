@@ -332,7 +332,8 @@ def generate_random_list_of_origins():
     generates the random list of origins
     :return:
     """
-    list_of_origins = Conventions.LIST_OF_ORIGINS.copy()
+    Queries.get_countries()
+    list_of_origins = Queries.get_countries().copy()
 
     origins_list_to_return = list()
 
@@ -439,8 +440,9 @@ def generate_genre_question(raw_artists_dict, game_type=None):
                                                            artist_to_play_on,
                                                            Conventions.GENDER_OFF_SET)
 
+    LIST_OF_GENRES = Queries.get_all_genres(10)['Genre']
     available_genres_for_question = [
-        genre for genre in Conventions.LIST_OF_GENRES if genre not in artist_genres_list
+        genre for genre in LIST_OF_GENRES if genre not in artist_genres_list
     ]
 
     genres_for_question = list()

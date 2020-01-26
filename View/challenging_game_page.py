@@ -92,7 +92,7 @@ def showArtist(Gamer_name, window, frame, GameInfoDict, artist_number, fileBackg
                          bg="white",
                          font=("Comic Sans MS", 16))
         message1.grid(row=0, column=0, pady=(5, 5))
-        message2 = Label(frame, text='the game will start  in 5 second', fg='black', bg="white",
+        message2 = Label(frame, text='the info will show in 5 seconds', fg='black', bg="white",
                          font=("Comic Sans MS", 14))
         message2.grid(row=1, column=0, pady=(5, 5))
         frame.after(5000, showAttribute, Gamer_name, window, frame, GameInfoDict, artist_number, 0, fileBackground2)

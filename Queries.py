@@ -162,7 +162,7 @@ def add_user(user_name, password1):
     return user_id
 
 
-def get_all_genres():
+def get_all_genres(limit=50):
     """
     Get list of possible genres.
     :return: list of genres ['genre1', 'genre2'...] or Conventions.EMPTY_ANSWERS_LIST_CODE if there are no genres
@@ -170,7 +170,7 @@ def get_all_genres():
     cmd = """
         SELECT name FROM (
         SELECT name, COUNT(*) as sum FROM """ + sql_server.settings_info["database"] + """.genres join
-         artist_genres on artist_genres.genre = genres.name GROUP BY name ORDER BY sum DESC limit 50) AS aa;
+         artist_genres on artist_genres.genre = genres.name GROUP BY name ORDER BY sum DESC limit """ + str(limit) + """) AS aa;
          """
     info = sql_server.get_info_by_command(cmd)
 
@@ -184,6 +184,19 @@ def get_all_genres():
     pre_dict["Genre"] = genres
 
     return pre_dict
+
+def get_countries():
+    """
+    get list of areas, which artists born.
+    used for wrong answers info
+    :return:
+    """
+    cmd = "select distinct area from artist limit 10;"
+    info = sql_server.get_info_by_command(cmd)
+    if len(info) == 0:
+        return Conventions.EMPTY_ANSWERS_LIST_CODE
+    return [g[0] for g in info]
+
 
 
 # -------- artist data -------

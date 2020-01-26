@@ -49,47 +49,6 @@ GAME_TYPES_CODE_FROM_VIEW_TO_STRING = {
 
 MOCK_GAME_SCORE = 1200
 
-LIST_OF_ORIGINS = [
-        "Israel",
-        "Turkey",
-        "Gibraltar",
-        "Côte d'Ivoire",
-        "Bosnia and Herzegovina",
-        "Colombia",
-        "Bulgaria",
-        "Morocco",
-        "Poland",
-        "Russian Federation",
-        "Guinea",
-        "Marshall Islands",
-        "Brunei Darussala",
-        "Ireland",
-        "Albania",
-        "Finland",
-        "Sweden",
-        "Martinique",
-        "Lithuania",
-        "Benin",
-        "Bangladesh"
-    ]
-
-LIST_OF_GENRES = [
-    "Blues",
-    "Brass & Military",
-    "Children's",
-    "Classical",
-    "Electronic",
-    "Folk, World, & Country",
-    "Funk / Soul",
-    "Hip-Hop",
-    "Jazz",
-    "Latin",
-    "Non-Music",
-    "Pop",
-    "Reggae",
-    "Rock",
-    "Stage & Screen"
-]
 
 
 NAME_OFF_SET = 0
