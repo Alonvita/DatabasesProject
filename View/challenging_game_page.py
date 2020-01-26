@@ -10,6 +10,7 @@ import Conventions
 GameInfoDict = ""
 
 
+# function that get progress bar and play it
 def bar(progress, frame):
     global GameInfoDict
     import time
@@ -31,11 +32,13 @@ def bar(progress, frame):
             break
 
 
+# get game
 def getGameInfoDict(Gamer_name):
     global GameInfoDict
     GameInfoDict = gL.start(Gamer_name.get(), Conventions.CHALLENGING_GAME_CODE)
 
 
+# challenging game
 def challenging_game_window(window, Gamer_name, fileBackground2):
     global GameInfoDict
     for widget in window.winfo_children():
@@ -48,6 +51,7 @@ def challenging_game_window(window, Gamer_name, fileBackground2):
     frame.grid_columnconfigure(0, weight=1)
     frame.grid_rowconfigure(0, weight=1)
 
+    # get game in thread
     t = threading.Thread(target=getGameInfoDict, args=(Gamer_name,))
     t.start()
 
@@ -62,7 +66,7 @@ def challenging_game_window(window, Gamer_name, fileBackground2):
     message1.grid(row=2, column=0, pady=(15, 5), padx=(10, 10))
     progress = Progressbar(frame, orient=HORIZONTAL, length=100, mode='indeterminate')
     progress.grid(row=3, column=0, pady=(5, 5))
-    bar(progress, frame)
+    bar(progress, frame)  # start progress bar
 
     listt = frame.grid_slaves()
     for l in listt:
@@ -71,22 +75,24 @@ def challenging_game_window(window, Gamer_name, fileBackground2):
     message1 = Label(frame, text='You will play on 5 artists try to remember all the facts', fg='black', bg="white",
                      font=("Comic Sans MS", 16))
     message1.grid(row=0, column=0, pady=(5, 5))
-    message2 = Label(frame, text='the game will start  in 5 secound', fg='black', bg="white",
+    message2 = Label(frame, text='the game will start  in 5 second', fg='black', bg="white",
                      font=("Comic Sans MS", 14))
     message2.grid(row=1, column=0, pady=(5, 5))
 
     frame.after(5000, showArtist, Gamer_name, window, frame, GameInfoDict, 0, fileBackground2)
 
 
+# function that show the artists
 def showArtist(Gamer_name, window, frame, GameInfoDict, artist_number, fileBackground2):
     if artist_number < len(GameInfoDict['artist_name']):
         list = frame.grid_slaves()
         for l in list:
             l.destroy()
-        message1 = Label(frame, text='you artist is: ' + GameInfoDict['artist_name'][artist_number], fg='black', bg="white",
+        message1 = Label(frame, text='your artist is: ' + GameInfoDict['artist_name'][artist_number], fg='black',
+                         bg="white",
                          font=("Comic Sans MS", 16))
         message1.grid(row=0, column=0, pady=(5, 5))
-        message2 = Label(frame, text='the game will start  in 5 secound', fg='black', bg="white",
+        message2 = Label(frame, text='the game will start  in 5 second', fg='black', bg="white",
                          font=("Comic Sans MS", 14))
         message2.grid(row=1, column=0, pady=(5, 5))
         frame.after(5000, showAttribute, Gamer_name, window, frame, GameInfoDict, artist_number, 0, fileBackground2)
@@ -94,6 +100,7 @@ def showArtist(Gamer_name, window, frame, GameInfoDict, artist_number, fileBackg
         frame.after(2000, showQuestion, Gamer_name, window, frame, GameInfoDict, 0, [], "", fileBackground2)
 
 
+# function that show the attribute of the artists
 def showAttribute(Gamer_name, window, frame, GameInfoDict, artist_number, attribute_number, fileBackground2):
     list = frame.grid_slaves()
     for l in list:
@@ -106,14 +113,17 @@ def showAttribute(Gamer_name, window, frame, GameInfoDict, artist_number, attrib
         for k in range(17):
             message = Label(frame, text="", bg="white")
             message.grid(row=k, column=j, pady=(5, 5), padx=(5, 5))
-    message3 = Label(frame, text=GameInfoDict['properties'][artist_number][attribute_number], fg='black', bg="white", font=("Comic Sans MS", 16))
+    message3 = Label(frame, text=GameInfoDict['properties'][artist_number][attribute_number], fg='black', bg="white",
+                     font=("Comic Sans MS", 16))
     message3.grid(row=randint(0, 16), column=randint(0, 16), pady=(0, 0))
     if attribute_number + 1 < len(GameInfoDict['properties'][artist_number]):
-        frame.after(2000, showAttribute, Gamer_name, window, frame, GameInfoDict, artist_number, attribute_number + 1, fileBackground2)
+        frame.after(2000, showAttribute, Gamer_name, window, frame, GameInfoDict, artist_number, attribute_number + 1,
+                    fileBackground2)
     else:
         frame.after(2000, showArtist, Gamer_name, window, frame, GameInfoDict, artist_number + 1, fileBackground2)
 
 
+# function that show the questions
 def showQuestion(Gamer_name, window, frame, GameInfoDict, numberOfQ, answers, get_anwser, fileBackground2):
     answers.append(get_anwser)
     if numberOfQ < len(GameInfoDict['questions'].keys()):
@@ -126,37 +136,38 @@ def showQuestion(Gamer_name, window, frame, GameInfoDict, numberOfQ, answers, ge
         for i in GameInfoDict['questions'].keys():
             list_of_q.append(i)
         q = list_of_q[numberOfQ]
-        question = Label(frame, text=q, fg='black', bg="white", font=("Comic Sans MS", 18))
+        question = Label(frame, text=q, fg='black', bg="white", font=("Comic Sans MS", 14))
         question.grid(row=0, column=0, pady=(10, 10))
 
         a1_text = GameInfoDict['questions'][q]['answers'][0]
-        a1 = Button(frame, text=a1_text, bg="#3abdef", fg="white", width=20, font=("Comic Sans MS", 14),
+        a1 = Button(frame, text=a1_text, bg="#3abdef", fg="white", width=30, font=("Comic Sans MS", 14),
                     command=lambda: showQuestion(Gamer_name, window, frame, GameInfoDict, numberOfQ + 1,
                                                  answers, a1_text, fileBackground2))
         a1.grid(row=1, column=0, pady=(5, 5))
 
         a2_text = GameInfoDict['questions'][q]['answers'][1]
-        a2 = Button(frame, text=a2_text, bg="#3abdef", fg="white", width=20, font=("Comic Sans MS", 14),
+        a2 = Button(frame, text=a2_text, bg="#3abdef", fg="white", width=30, font=("Comic Sans MS", 14),
                     command=lambda: showQuestion(Gamer_name, window, frame, GameInfoDict, numberOfQ + 1,
                                                  answers, a2_text, fileBackground2))
         a2.grid(row=2, column=0, pady=(5, 5))
 
         a3_text = GameInfoDict['questions'][q]['answers'][2]
-        a3 = Button(frame, text=a3_text, bg="#3abdef", fg="white", width=20, font=("Comic Sans MS", 14),
+        a3 = Button(frame, text=a3_text, bg="#3abdef", fg="white", width=30, font=("Comic Sans MS", 14),
                     command=lambda: showQuestion(Gamer_name, window, frame, GameInfoDict, numberOfQ + 1,
                                                  answers, a3_text, fileBackground2))
         a3.grid(row=3, column=0, pady=(5, 5))
 
         a4_text = GameInfoDict['questions'][q]['answers'][3]
-        a4 = Button(frame, text=a4_text, bg="#3abdef", fg="white", width=20, font=("Comic Sans MS", 14),
+        a4 = Button(frame, text=a4_text, bg="#3abdef", fg="white", width=30, font=("Comic Sans MS", 14),
                     command=lambda: showQuestion(Gamer_name, window, frame, GameInfoDict, numberOfQ + 1,
                                                  answers, a4_text, fileBackground2))
         a4.grid(row=4, column=0, pady=(5, 5))
         right_answer = Label(frame, text=GameInfoDict['questions'][q]['true'], bg="white", fg='black',
                              font=("Comic Sans MS", 10))
         right_answer.grid(row=5, column=0, pady=(10, 10))
-    else:
+    else:  # the last question
         del answers[0]
+        # get grade
         grade = gL.end(Gamer_name.get(), answers, GameInfoDict, 3)
         list = frame.grid_slaves()
         for l in list:
@@ -174,5 +185,6 @@ def showQuestion(Gamer_name, window, frame, GameInfoDict, numberOfQ, answers, ge
         bottonEasy.grid(row=1, column=0, pady=(5, 5))
 
 
+# go to start menu
 def start(window, Gamer_name, fileBackground2):
     start_menu.start_menu_window(window, Gamer_name, fileBackground2)

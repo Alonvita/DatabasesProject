@@ -36,11 +36,15 @@ def register(user_name, password):
     """
     add_success = 1
     add_fail = 0
+    user_name_short = -2
+    password_short_long = -1
 
-    print("Game logic: " + user_name + " " + password)
     if Queries.add_user(user_name, password) == Conventions.ADD_FAILURE:
         return add_fail
-
+    elif len(password) < 6 or len(password) > 12:
+        return password_short_long
+    elif len(user_name) < 2:
+        return user_name_short
     return add_success
 
 

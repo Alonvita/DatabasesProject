@@ -13,7 +13,7 @@ settings_info = None
 class Server:
     def __init__(self):
         global settings_info
-        settings_info = self.gat_configurations_from_file("../ServerData.txt")
+        settings_info = self.gat_configurations_from_file("ServerData.txt")
         self.settings = settings_info
         self.settings_info = settings_info
 
@@ -124,4 +124,3 @@ class Server:
         except mysql.connector.Error as err:
             print("set_info_by_command:Something went wrong: {}" + err.msg)
             crash_window("Cant connect update data on database")
-        print(command_string)

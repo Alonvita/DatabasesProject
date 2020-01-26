@@ -1,10 +1,11 @@
 from tkinter import *
 
 
-def crash_window(textt = "crash"):
+# crash window
+def crash_window(textt="crash"):
     window = Tk()
     window.title("crash")
-    window.geometry("300x300")
+    window.geometry("600x300")
     window.minsize(width=300, height=300)
     window.grid_columnconfigure(1, weight=1)
     window.grid_rowconfigure(1, weight=1)
