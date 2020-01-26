@@ -434,23 +434,25 @@ def generate_genre_question(raw_artists_dict, game_type=None):
     """
     artist_to_play_on = pick_artist_to_play_on(raw_artists_dict, game_type)
 
-    list_of_lists_of_genres = list()
+    artist_genres_list = load_offset_from_raw_artists_dict(raw_artists_dict,
+                                                           Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET,
+                                                           artist_to_play_on,
+                                                           Conventions.GENDER_OFF_SET)
 
-    for artist in raw_artists_dict[Conventions.RAW_ARTISTS_DATA_ARTIST_OFFSET]:
-        # appends a LIST of genres per artist name
-        list_of_lists_of_genres.append(Queries.get_genre_by_artist(artist[Conventions.NAME_OFF_SET]))
+    available_genres_for_question = [
+        genre1 - genre2 for genre1, genre2 in zip(Conventions.LIST_OF_GENRES, artist_genres_list)
+    ]
 
     genres_for_question = list()
 
-    # randomly pick a genre from the list of genres per artist
-    for artist_genres_list in list_of_lists_of_genres:
-        genres_for_question.append(artist_genres_list[random.randint(0, len(artist_genres_list) - 1)])
+    for index in range(0, 4):
+        genres_for_question.append(available_genres_for_question[random.randint(0, len(artist_genres_list) - 1)])
 
     # check for None values
     if none_values_exist_in_answer_list(genres_for_question):
         return None
 
-    if answers_list_empty_or_holds_less_than_three_values(genres_for_question):
+    if answers_list_empty_or_holds_less_than_three_values(available_genres_for_question):
         return None
 
     question_text = Conventions.QUESTIONS_STRINGS_DICT[Conventions.QUESTIONS_DICT_GENRE]
@@ -463,9 +465,9 @@ def generate_genre_question(raw_artists_dict, game_type=None):
                                               Conventions.NAME_OFF_SET)
         )
 
-    right_answer = genres_for_question[artist_to_play_on]
+    right_answer = available_genres_for_question[artist_to_play_on]
 
-    return build_question_dict(question_text, genres_for_question, right_answer)
+    return build_question_dict(question_text, available_genres_for_question, right_answer)
 
 
 def generate_similar_artists_question(raw_artists_dict, game_type=None):

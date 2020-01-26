@@ -73,6 +73,25 @@ LIST_OF_ORIGINS = [
         "Bangladesh"
     ]
 
+LIST_OF_GENRES = [
+    "Blues",
+    "Brass & Military",
+    "Children's",
+    "Classical",
+    "Electronic",
+    "Folk, World, & Country",
+    "Funk / Soul",
+    "Hip-Hop",
+    "Jazz",
+    "Latin",
+    "Non-Music",
+    "Pop",
+    "Reggae",
+    "Rock",
+    "Stage & Screen"
+]
+
+
 NAME_OFF_SET = 0
 GENDER_OFF_SET = 1
 FROM_OFF_SET = 2
