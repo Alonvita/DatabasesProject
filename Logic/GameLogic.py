@@ -440,7 +440,7 @@ def generate_genre_question(raw_artists_dict, game_type=None):
                                                            Conventions.GENDER_OFF_SET)
 
     available_genres_for_question = [
-        genre1 - genre2 for genre1, genre2 in zip(Conventions.LIST_OF_GENRES, artist_genres_list)
+        genre for genre in Conventions.LIST_OF_GENRES if genre not in artist_genres_list
     ]
 
     genres_for_question = list()
