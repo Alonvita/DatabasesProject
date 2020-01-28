@@ -39,12 +39,13 @@ def register(user_name, password):
     user_name_short = -2
     password_short_long = -1
 
-    if Queries.add_user(user_name, password) == Conventions.ADD_FAILURE:
-        return add_fail
-    elif len(password) < 6 or len(password) > 12:
+
+    if len(password) < 6 or len(password) > 12:
         return password_short_long
     elif len(user_name) < 2:
         return user_name_short
+    elif Queries.add_user(user_name, password) == Conventions.ADD_FAILURE:
+        return add_fail
     return add_success
 
 
